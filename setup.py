@@ -16,12 +16,7 @@ setup(
     packages=['yahoofinancials'],
     install_requires=[
         "requests",
-        "beautifulsoup4",
-        "re",
-        "sys",
-        "datetime",
-        "json",
-        "time"
+        "beautifulsoup4"
     ],
     classifiers = [],
     zip_safe=False
