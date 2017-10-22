@@ -29,7 +29,7 @@ List of Current Included Functions:
 
 ## Installation
 * yahoofinancials runs fine on most versions of python 2 and 3.
-* It was built and tested using versions 2.7 and 3.4
+* It was built and tested using versions 2.7 and 3.5
 * the package depends on beautifulsoup4 and requests to work
 
 1. Installation using pip:
