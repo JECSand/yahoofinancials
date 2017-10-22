@@ -253,7 +253,7 @@ print(yahoo_finance.get_stock_quote_type_data())
 }
 ```
 
-## Changes Coming Soon in Version 0.2
+## Changes Coming Soon in Version 0.3
 1. More Methods for more modular data, such as:
     * Financial Ratios Methods
     * Methods to call for one or more field(s) instead of a whole data set
