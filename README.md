@@ -5,15 +5,31 @@ Welcome to Yahoo Financials!
 A powerful financial data module used for pulling both fundamental and technical stock data from Yahoo Finance.
 The module uses a web scraping technique for retrieving the data, thus eliminating the need for the now discontinued Yahoo Finance API.
 
+## Installation
+* yahoofinancials runs fine on most versions of python 2 and 3.
+* It was built and tested using versions 2.7 and 3.4
+* the package depends on beautifulsoup4 and requests to work
+
+1. Installation using pip:
+```R
+$ python pip install yahoofinancials
+```
+2. Installation using github
+```R
+$ git clone https://github.com/JECSand/yahoofinancials.git
+$ cd yahoofinancials
+$ python setup.py install
+```
+
 ## Features
 Financial Data is returned as JSON.
 Run multiple stocks at once in groupings
 Works on most versions of python 2 and 3
-List of Current Included Functions:
+List of Current Included Methods:
 
 1. get_financial_stmts(frequency, statement_type, reformat=True)
    * frequency can be either 'annual' or 'quarterly'.
-   * statement_type can be 'income', 'balance', 'cash'.
+   * statement_type can be 'income', 'balance', 'cash' or a list of several.
    * reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 2. get_stock_price_data(reformat=True)
    * reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
@@ -27,21 +43,38 @@ List of Current Included Functions:
    * end_date should be entered in the 'YYYY-MM-DD' format. Last day that stock data will be pulled.
    * time_interval can be either 'daily', 'weekly', or 'monthly'. Parameter determines the time period interval.
 
-## Installation
-* yahoofinancials runs fine on most versions of python 2 and 3.
-* It was built and tested using versions 2.7 and 3.5
-* the package depends on beautifulsoup4 and requests to work
-
-1. Installation using pip:
-```R
-$ pip install yahoofinancials
-```
-2. Installation using github
-```R
-$ git clone https://github.com/JECSand/yahoofinancials.git
-$ cd yahoofinancials
-$ python setup.py install
-```
+### New Methods Added in v0.3
+* get_current_price():
+* get_current_change():
+* get_current_percent_change():
+* get_current_volume():
+* get_prev_close_price():
+* get_open_price():
+* get_ten_day_avg_daily_volume():
+* get_three_month_avg_daily_volume():
+* get_stock_exchange():
+* get_market_cap():
+* get_daily_low():
+* get_daily_high():
+* get_currency():
+* get_yearly_high():
+* get_yearly_low():
+* get_dividend_yield():
+* get_annual_avg_div_yield():
+* get_five_yr_avg_div_yield():
+* get_dividend_rate():
+* get_annual_avg_div_rate():
+* get_50day_moving_avg():
+* get_200day_moving_avg():
+* get_beta():
+* get_payout_ratio():
+* get_pe_ratio():
+* get_price_to_sales():
+* get_exdividend_date():
+* get_book_value():
+* get_ebit():
+* get_net_income():
+* get_earnings_per_share():
 
 ## Usage Examples
 * The class constructor can take either a single ticker or a list of tickers as it's parameter.
@@ -57,7 +90,9 @@ yahoo_financials = YahooFinancials(ticker)
 
 balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
 income_statement_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'income')
+all_statement_data_qt =  yahoo_financials.get_financial_stmts('quarterly', ['income', 'cash', 'balance'])
 apple_earnings_data = yahoo_financials.get_stock_earnings_data()
+apple_net_income = yahoo_financials.get_net_income()
 historical_stock_prices = yahoo_financials.get_historical_stock_data('2015-01-15', '2017-10-15', 'weekly')
 ```
 
@@ -74,6 +109,7 @@ yahoo_financials_banks = YahooFinancials(bank_stocks)
 tech_cash_flow_data_an = yahoo_financials_tech.get_financial_stmts('annual', 'cash')
 bank_cash_flow_data_an = yahoo_financials_banks.get_financial_stmts('annual', 'cash')
 
+banks_net_ebit = yahoo_financials_banks.get_ebit()
 tech_stock_price_data = tech_cash_flow_data.get_stock_price_data()
 daily_bank_stock_prices = yahoo_financials_banks.get_historical_stock_data('2008-09-15', '2017-09-15', 'daily')
 ```
@@ -252,11 +288,3 @@ print(yahoo_finance.get_stock_quote_type_data())
     }
 }
 ```
-
-## Changes Coming Soon in Version 0.3
-1. More Methods for more modular data, such as:
-    * Financial Ratios Methods
-    * Methods to call for one or more field(s) instead of a whole data set
-2. Improvements to already existing methods such as:
-    * Adding a parameter to the historical_stock_prices method to pull all data
-    * Expanding the statement_type parameter to accept lists
