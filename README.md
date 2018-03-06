@@ -12,7 +12,7 @@ The module uses a web scraping technique for retrieving the data, thus eliminati
 
 1. Installation using pip:
 ```R
-$ python pip install yahoofinancials
+$ pip install yahoofinancials
 ```
 2. Installation using github
 ```R
