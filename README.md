@@ -233,7 +233,7 @@ print(yahoo_financials.get_financial_stmts('quarterly', 'cash'))
 4. Monthly Stock Price History Data for Wells Fargo:
 ```R
 yahoo_financials = YahooFinancials('WFC')
-print(yahoo_finance.get_historical_stock_data("2017-09-10", "2017-10-10", "monthly"))
+print(yahoo_financials.get_historical_stock_data("2017-09-10", "2017-10-10", "monthly"))
 ```
 ```javascript
 {
@@ -266,7 +266,7 @@ print(yahoo_finance.get_historical_stock_data("2017-09-10", "2017-10-10", "month
 5. Apple Stock Quote Data:
 ```R
 yahoo_financials = YahooFinancials('AAPL')
-print(yahoo_finance.get_stock_quote_type_data())
+print(yahoo_financials.get_stock_quote_type_data())
 ```
 ```javascript
 {
