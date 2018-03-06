@@ -51,6 +51,7 @@ import datetime
 from datetime import date
 import pytz
 
+
 # Class containing Yahoo Finance ETL Functionality
 class YahooFinanceETL(object):
 
@@ -93,7 +94,6 @@ class YahooFinanceETL(object):
             d = date(int(split_date[0]), int(split_date[1]), int(split_date[2]))
             form_date = int(time.mktime(d.timetuple()))
         return form_date
-
 
     # Private Static Method to Convert Eastern Time to UTC
     @staticmethod
@@ -283,7 +283,6 @@ class YahooFinanceETL(object):
             dict_ent = {up_ticker: cleaned_re_data}
         return dict_ent
 
-
     # Private method to return the stmt_id for the reformat_process
     def _get_stmt_id(self, statement_type, raw_data):
         stmt_id = ''
@@ -467,7 +466,10 @@ class YahooFinancials(YahooFinanceETL):
     def _financial_statement_data(self, stmt_type, stmt_code, field_name, freq):
         re_data = self.get_financial_stmts(freq, stmt_type)[stmt_code]
         if isinstance(self.ticker, str):
-            date_key = re_data[self.ticker][0].keys()[0]
+            try:
+                date_key = re_data[self.ticker][0].keys()[0]
+            except:
+                date_key = list(re_data[self.ticker][0])[0]
             data = re_data[self.ticker][0][date_key][field_name]
         else:
             data = {}

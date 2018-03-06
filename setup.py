@@ -5,10 +5,10 @@ except ImportError:
 
 setup(
     name='yahoofinancials',
-    version='0.3',
+    version='0.4',
     description='A powerful financial data module used for pulling fundamental and technical stock data from Yahoo Finance',
     url='https://github.com/JECSand/yahoofinancials',
-    download_url = 'https://github.com/JECSand/yahoofinancials/archive/0.1.tar.gz',
+    download_url='https://github.com/JECSand/yahoofinancials/archive/0.4.tar.gz',
     author='Connor Sanders',
     author_email='connor@exceleri.com',
     license='MIT',
@@ -19,6 +19,6 @@ setup(
         "beautifulsoup4",
         "pytz"
     ],
-    classifiers = [],
+    classifiers=[],
     zip_safe=False
 )
