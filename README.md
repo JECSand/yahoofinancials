@@ -1,5 +1,7 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
+Now Looking for New Contributers! 
+Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title if interested.
 
 ## Overview
 A powerful financial data module used for pulling both fundamental and technical stock data from Yahoo Finance.
