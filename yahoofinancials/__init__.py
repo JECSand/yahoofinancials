@@ -56,7 +56,7 @@ import pytz
 class YahooFinanceETL(object):
 
     def __init__(self, ticker):
-        self.ticker = ticker
+        self.ticker = ticker.upper() if isinstance(ticker, str) else [t.upper() for t in ticker]
         self._cache = {}
         self._lastget = 0
 
@@ -276,8 +276,7 @@ class YahooFinanceETL(object):
         return data
 
     # Private Method to take scrapped data and build a data dictionary with
-    def _create_dict_ent(self, ticker, statement_type, tech_type, report_name, hist_obj):
-        up_ticker = ticker.upper()
+    def _create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
         YAHOO_URL = self._BASE_YAHOO_URL + up_ticker + '/' + self.YAHOO_FINANCIAL_TYPES[statement_type][0] + '?p=' +\
                     up_ticker
         if tech_type == '' and statement_type != 'history':
@@ -389,10 +388,6 @@ class YahooFinanceETL(object):
 
 # Class containing methods to create stock data extracts
 class YahooFinancials(YahooFinanceETL):
-
-    def __init__(self, ticker):
-        super(YahooFinancials, self).__init__(ticker)
-        self.ticker = ticker
 
     # Private method that handles financial statement extraction
     def _run_financial_stmt(self, statement_type, report_num, reformat):
