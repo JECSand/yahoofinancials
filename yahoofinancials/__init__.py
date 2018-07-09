@@ -57,6 +57,11 @@ class YahooFinanceETL(object):
 
     def __init__(self, ticker):
         self.ticker = ticker
+        self._cache = {}
+        self._lastget = 0
+
+    # Minimum interval between Yahoo Finance requests for this instance
+    _MIN_INTERVAL = 7
 
     # Meta-data dictionaries for the class to use
     YAHOO_FINANCIAL_TYPES = {
@@ -105,14 +110,19 @@ class YahooFinanceETL(object):
         date_utc = date_eastern.astimezone(utc)
         return date_utc.strftime('%Y-%m-%d %H:%M:%S %Z%z')
 
-    # private static method to scrap data from yahoo finance
-    @staticmethod
-    def _scrape_data(url, tech_type, statement_type):
-        response = requests.get(url)
-        time.sleep(7)
-        soup = BeautifulSoup(response.content, "html.parser")
-        script = soup.find("script", text=re.compile("root.App.main")).text
-        data = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
+    # private method to scrape data from yahoo finance
+    def _scrape_data(self, url, tech_type, statement_type):
+        if not self._cache.get(url):
+            now = int(time.time())
+            if self._lastget and now - self._lastget < self._MIN_INTERVAL:
+                time.sleep(self._MIN_INTERVAL - (now - self._lastget) + 1)
+                now = int(time.time())
+            self._lastget = now
+            response = requests.get(url)
+            soup = BeautifulSoup(response.content, "html.parser")
+            script = soup.find("script", text=re.compile("root.App.main")).text
+            self._cache[url] = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
+        data = self._cache[url]
         if tech_type == '' and statement_type != 'history':
             stores = data["context"]["dispatcher"]["stores"]["QuoteSummaryStore"]
         elif tech_type != '' and statement_type != 'history':
