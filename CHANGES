@@ -2,3 +2,5 @@
 0.2  10/20/2017 -- Added New Methods and Restructed Module Classes
 0.3  10/25/2017 -- Added New Methods and Calculated Measures
 0.4  03/06/2018 -- Fixed reported bug on line 470 of init.py by adding a try and except with suggested line of code.
+0.6  07/06/2018 -- Fixed reported bug in format_date function.
+0.6  07/06/2018 -- Added exception handler that returns a ticker with no available data with a null value.
