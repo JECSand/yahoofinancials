@@ -1,15 +1,15 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.5
+Version: 0.6
 ==============================
 
 Author: Connor Sanders
-Email: connor@exceleri.com
-Version Released: 10/22/2017
+Email: sandersconnor1@gmail.com
+Version Released: 7/18/2018
 Tested on Python 2.7 and 3.5
 
-Copyright (c) 2017 Connor Sanders
+Copyright (c) 2018 Connor Sanders
 MIT License
 
 List of Included Functions:
@@ -88,7 +88,13 @@ class YahooFinanceETL(object):
     @staticmethod
     def format_date(in_date, convert_type):
         if convert_type == 'standard':
-            form_date = datetime.datetime.fromtimestamp(int(in_date)).strftime('%Y-%m-%d')
+            if in_date >= 0:
+                form_date = datetime.datetime.fromtimestamp(int(in_date)).strftime('%Y-%m-%d')
+            else:
+                form_date = datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)
+                if ' ' not in str(form_date):
+                    return str(form_date)
+                return str(form_date.date())
         else:
             split_date = in_date.split('-')
             d = date(int(split_date[0]), int(split_date[1]), int(split_date[2]))
@@ -105,7 +111,7 @@ class YahooFinanceETL(object):
         date_utc = date_eastern.astimezone(utc)
         return date_utc.strftime('%Y-%m-%d %H:%M:%S %Z%z')
 
-    # private static method to scrap data from yahoo finance
+    # Private static method to scrap data from yahoo finance
     @staticmethod
     def _scrape_data(url, tech_type, statement_type):
         response = requests.get(url)
@@ -130,7 +136,7 @@ class YahooFinanceETL(object):
             numerical_val = None
         return numerical_val
 
-    # private static method to format date serial string to readable format and vice versa
+    # Private method to format date serial string to readable format and vice versa
     def _format_time(self, in_time):
         form_date_time = datetime.datetime.fromtimestamp(int(in_time)).strftime('%Y-%m-%d %H:%M:%S')
         utc_dt = self._convert_to_utc(form_date_time)
@@ -152,7 +158,7 @@ class YahooFinanceETL(object):
         sub_ent = {key: sub_list}
         return sub_ent
 
-    # Private static method to process raw earnings data and clean
+    # Private method to process raw earnings data and clean
     def _clean_earnings_data(self, raw_data):
         cleaned_data = {}
         earnings_key = 'earningsData'
@@ -191,7 +197,7 @@ class YahooFinanceETL(object):
             if 'Time' in k:
                 formatted_utc_time = self._format_time(v)
                 dict_ent = {k: formatted_utc_time}
-            elif 'Date' in k :
+            elif 'Date' in k:
                 try:
                     formatted_date = v['fmt']
                 except:
@@ -230,7 +236,7 @@ class YahooFinanceETL(object):
             cleaned_dict.update(dict_ent)
         return cleaned_dict
 
-    # Private static method to clean summary and price reports
+    # Private method to clean summary and price reports
     def _clean_reports(self, raw_data):
         if (sys.version_info > (3, 0)):
             cleaned_dict = self._clean_process_pythree(raw_data)
@@ -271,15 +277,25 @@ class YahooFinanceETL(object):
         YAHOO_URL = self._BASE_YAHOO_URL + up_ticker + '/' + self.YAHOO_FINANCIAL_TYPES[statement_type][0] + '?p=' +\
                     up_ticker
         if tech_type == '' and statement_type != 'history':
-            re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-            dict_ent = {up_ticker: re_data[u'' + report_name], 'dataType': report_name}
+            try:
+                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+                dict_ent = {up_ticker: re_data[u'' + report_name], 'dataType': report_name}
+            except:
+                re_data = None
+                dict_ent = {up_ticker: re_data, 'dataType': report_name}
         elif tech_type != '' and statement_type != 'history':
-            re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+            try:
+                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+            except:
+                re_data = None
             dict_ent = {up_ticker: re_data}
         else:
             YAHOO_URL = self._build_historical_url(up_ticker, hist_obj)
-            re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-            cleaned_re_data = self._clean_historical_data(re_data)
+            try:
+                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+                cleaned_re_data = self._clean_historical_data(re_data)
+            except:
+                cleaned_re_data = None
             dict_ent = {up_ticker: cleaned_re_data}
         return dict_ent
 
@@ -298,21 +314,24 @@ class YahooFinanceETL(object):
     # Private Method for the Reformat Process
     def _reformat_stmt_data_process(self, raw_data, statement_type):
         final_data_list = []
-        stmt_id = self._get_stmt_id(statement_type, raw_data)
-        hashed_data_list = raw_data[stmt_id]
-        for data_item in hashed_data_list:
-            data_date = ''
-            sub_data_dict = {}
-            for k, v in data_item.items():
-                if k == 'endDate':
-                    data_date = v['fmt']
-                elif k != 'maxAge':
-                    numerical_val = self._determine_numeric_value(v)
-                    sub_dict_item = {k: numerical_val}
-                    sub_data_dict.update(sub_dict_item)
-            dict_item = {data_date: sub_data_dict}
-            final_data_list.append(dict_item)
-        return final_data_list
+        if raw_data is not None:
+            stmt_id = self._get_stmt_id(statement_type, raw_data)
+            hashed_data_list = raw_data[stmt_id]
+            for data_item in hashed_data_list:
+                data_date = ''
+                sub_data_dict = {}
+                for k, v in data_item.items():
+                    if k == 'endDate':
+                        data_date = v['fmt']
+                    elif k != 'maxAge':
+                        numerical_val = self._determine_numeric_value(v)
+                        sub_dict_item = {k: numerical_val}
+                        sub_data_dict.update(sub_dict_item)
+                dict_item = {data_date: sub_data_dict}
+                final_data_list.append(dict_item)
+            return final_data_list
+        else:
+            return raw_data
 
     # Private Method to return subdict entry for the statement reformat process
     def _get_sub_dict_ent(self, ticker, raw_data, statement_type):
