@@ -52,13 +52,16 @@ from datetime import date
 import pytz
 
 
+# track the last get timestamp to add a minimum delay between gets - be nice!
+_lastget = 0
+
+
 # Class containing Yahoo Finance ETL Functionality
 class YahooFinanceETL(object):
 
     def __init__(self, ticker):
         self.ticker = ticker.upper() if isinstance(ticker, str) else [t.upper() for t in ticker]
         self._cache = {}
-        self._lastget = 0
 
     # Minimum interval between Yahoo Finance requests for this instance
     _MIN_INTERVAL = 7
@@ -112,12 +115,13 @@ class YahooFinanceETL(object):
 
     # Private method to scrape data from yahoo finance
     def _scrape_data(self, url, tech_type, statement_type):
+        global _lastget
         if not self._cache.get(url):
             now = int(time.time())
-            if self._lastget and now - self._lastget < self._MIN_INTERVAL:
-                time.sleep(self._MIN_INTERVAL - (now - self._lastget) + 1)
+            if _lastget and now - _lastget < self._MIN_INTERVAL:
+                time.sleep(self._MIN_INTERVAL - (now - _lastget) + 1)
                 now = int(time.time())
-            self._lastget = now
+            _lastget = now
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
             script = soup.find("script", text=re.compile("root.App.main")).text
@@ -204,7 +208,7 @@ class YahooFinanceETL(object):
             elif 'Date' in k:
                 try:
                     formatted_date = v['fmt']
-                except:
+                except (KeyError, TypeError):
                     formatted_date = '-'
                 dict_ent = {k: formatted_date}
             elif v is None or isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
@@ -251,13 +255,13 @@ class YahooFinanceETL(object):
             try:
                 re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
                 dict_ent = {up_ticker: re_data[u'' + report_name], 'dataType': report_name}
-            except:
+            except KeyError:
                 re_data = None
                 dict_ent = {up_ticker: re_data, 'dataType': report_name}
         elif tech_type != '' and statement_type != 'history':
             try:
                 re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-            except:
+            except KeyError:
                 re_data = None
             dict_ent = {up_ticker: re_data}
         else:
@@ -265,7 +269,7 @@ class YahooFinanceETL(object):
             try:
                 re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
                 cleaned_re_data = self._clean_historical_data(re_data)
-            except:
+            except KeyError:
                 cleaned_re_data = None
             dict_ent = {up_ticker: cleaned_re_data}
         return dict_ent
@@ -452,7 +456,7 @@ class YahooFinancials(YahooFinanceETL):
         if isinstance(self.ticker, str):
             try:
                 date_key = re_data[self.ticker][0].keys()[0]
-            except:
+            except (IndexError, AttributeError):
                 date_key = list(re_data[self.ticker][0])[0]
             data = re_data[self.ticker][0][date_key][field_name]
         else:
