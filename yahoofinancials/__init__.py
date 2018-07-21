@@ -91,19 +91,13 @@ class YahooFinanceETL(object):
 
     # Public static method to format date serial string to readable format and vice versa
     @staticmethod
-    def format_date(in_date, convert_type):
-        if convert_type == 'standard':
-            if in_date >= 0:
-                form_date = datetime.datetime.fromtimestamp(int(in_date)).strftime('%Y-%m-%d')
-            else:
-                form_date = datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)
-                if ' ' not in str(form_date):
-                    return str(form_date)
-                return str(form_date.date())
-        else:
-            split_date = in_date.split('-')
-            d = date(int(split_date[0]), int(split_date[1]), int(split_date[2]))
+    def format_date(in_date):
+        if isinstance(in_date, str):
+            year, month, day = in_date.split()[0].split('-')
+            d = date(int(year), int(month), int(day))
             form_date = int(time.mktime(d.timetuple()))
+        else:
+            form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
         return form_date
 
     # Private Static Method to Convert Eastern Time to UTC
@@ -140,7 +134,7 @@ class YahooFinanceETL(object):
     # Private static method to determine if a numerical value is in the data object being cleaned
     @staticmethod
     def _determine_numeric_value(value_dict):
-        if 'raw' in list(value_dict.keys()):
+        if 'raw' in value_dict.keys():
             numerical_val = value_dict['raw']
         else:
             numerical_val = None
@@ -200,58 +194,28 @@ class YahooFinanceETL(object):
                     cleaned_data.update(dict_ent)
         return cleaned_data
 
-    # Python 2 method for cleaning data due to Unicode
-    def _clean_process_pytwo(self, raw_data):
-        cleaned_dict = {}
-        for k, v in raw_data.items():
-            if 'Time' in k:
-                formatted_utc_time = self._format_time(v)
-                dict_ent = {k: formatted_utc_time}
-            elif 'Date' in k:
-                try:
-                    formatted_date = v['fmt']
-                except:
-                    formatted_date = '-'
-                dict_ent = {k: formatted_date}
-            elif isinstance(v, str) or isinstance(v, int) or isinstance(v, float) or isinstance(v, unicode):
-                dict_ent = {k: v}
-            elif v is None:
-                dict_ent = {k: v}
-            else:
-                numerical_val = self._determine_numeric_value(v)
-                dict_ent = {k: numerical_val}
-            cleaned_dict.update(dict_ent)
-        return cleaned_dict
-
-    # Python 3 method for cleaning data due to Unicode
-    def _clean_process_pythree(self, raw_data):
-        cleaned_dict = {}
-        for k, v in raw_data.items():
-            if 'Time' in k:
-                formatted_utc_time = self._format_time(v)
-                dict_ent = {k: formatted_utc_time}
-            elif 'Date' in k:
-                try:
-                    formatted_date = v['fmt']
-                except:
-                    formatted_date = '-'
-                dict_ent = {k: formatted_date}
-            elif isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
-                dict_ent = {k: v}
-            elif v is None:
-                dict_ent = {k: v}
-            else:
-                numerical_val = self._determine_numeric_value(v)
-                dict_ent = {k: numerical_val}
-            cleaned_dict.update(dict_ent)
-        return cleaned_dict
-
     # Private method to clean summary and price reports
     def _clean_reports(self, raw_data):
-        if (sys.version_info > (3, 0)):
-            cleaned_dict = self._clean_process_pythree(raw_data)
-        else:
-            cleaned_dict = self._clean_process_pytwo(raw_data)
+        cleaned_dict = {}
+        for k, v in raw_data.items():
+            if 'Time' in k:
+                formatted_utc_time = self._format_time(v)
+                dict_ent = {k: formatted_utc_time}
+            elif 'Date' in k:
+                try:
+                    formatted_date = v['fmt']
+                except:
+                    formatted_date = '-'
+                dict_ent = {k: formatted_date}
+            elif v is None or isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
+                dict_ent = {k: v}
+            # Python 2 and Unicode
+            elif sys.version_info < (3, 0) and isinstance(v, unicode):
+                dict_ent = {k: v}
+            else:
+                numerical_val = self._determine_numeric_value(v)
+                dict_ent = {k: numerical_val}
+            cleaned_dict.update(dict_ent)
         return cleaned_dict
 
     # Private method to get time interval code
@@ -266,19 +230,17 @@ class YahooFinanceETL(object):
         data = {}
         for k, v in hist_data.items():
             if 'date' in k.lower():
-                cleaned_date = self.format_date(v, 'standard')
+                cleaned_date = self.format_date(v)
                 dict_ent = {k: {u'' + 'formatted_date': cleaned_date, 'date': v}}
-                data.update(dict_ent)
             elif isinstance(v, list):
                 sub_dict_list = []
                 for sub_dict in v:
-                    sub_dict[u'' + 'formatted_date'] = self.format_date(sub_dict['date'], 'standard')
+                    sub_dict[u'' + 'formatted_date'] = self.format_date(sub_dict['date'])
                     sub_dict_list.append(sub_dict)
                 dict_ent = {k: sub_dict_list}
-                data.update(dict_ent)
             else:
                 dict_ent = {k: v}
-                data.update(dict_ent)
+            data.update(dict_ent)
         return data
 
     # Private Method to take scrapped data and build a data dictionary with
@@ -312,7 +274,7 @@ class YahooFinanceETL(object):
     def _get_stmt_id(self, statement_type, raw_data):
         stmt_id = ''
         i = 0
-        for key in list(raw_data.keys()):
+        for key in raw_data.keys():
             if key in self.YAHOO_FINANCIAL_TYPES[statement_type.lower()]:
                 stmt_id = key
                 i += 1
@@ -464,8 +426,8 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for user to get historical stock data with
     def get_historical_stock_data(self, start_date, end_date, time_interval):
         interval_code = self.get_time_code(time_interval)
-        start = self.format_date(start_date, 'unixstamp')
-        end = self.format_date(end_date, 'unixstamp')
+        start = self.format_date(start_date)
+        end = self.format_date(end_date)
         hist_obj = {'start': start, 'end': end, 'interval': interval_code}
         data = self.get_stock_data('history', hist_obj=hist_obj)
         return data
@@ -475,22 +437,14 @@ class YahooFinancials(YahooFinanceETL):
         if isinstance(self.ticker, str):
              return self.get_stock_price_data()[self.ticker][data_field]
         else:
-            data = {}
-            for tick in self.ticker:
-                price = self.get_stock_price_data()[tick][data_field]
-                data.update({tick: price})
-            return data
+            return {tick: self.get_stock_price_data()[tick][data_field] for tick in self.ticker}
 
     # Private Method for Functions needing stock_price_data
     def _stock_summary_data(self, data_field):
         if isinstance(self.ticker, str):
             return self.get_stock_summary_data()[self.ticker][data_field]
         else:
-            data = {}
-            for tick in self.ticker:
-                price = self.get_stock_summary_data()[tick][data_field]
-                data.update({tick: price})
-            return data
+            return {tick: self.get_stock_summary_data()[tick][data_field] for tick in self.ticker}
 
     # Private Method for Functions needing financial statement data
     def _financial_statement_data(self, stmt_type, stmt_code, field_name, freq):
@@ -610,7 +564,4 @@ class YahooFinancials(YahooFinanceETL):
         if isinstance(self.ticker, str):
             return price_data / pe_ratio
         else:
-            data = {}
-            for tick in self.ticker:
-                data.update({tick: price_data[tick] / pe_ratio[tick]})
-            return data
+            return {tick: price_data[tick] / pe_ratio[tick] for tick in self.ticker}
