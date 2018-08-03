@@ -569,3 +569,4 @@ class YahooFinancials(YahooFinanceETL):
             return price_data / pe_ratio
         else:
             return {tick: price_data[tick] / pe_ratio[tick] for tick in self.ticker}
+        
