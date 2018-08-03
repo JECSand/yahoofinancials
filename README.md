@@ -1,6 +1,6 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
-Now Looking for New Contributers!
+Now Looking for New Contributers! 
 
 Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title if interested.
 
