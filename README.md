@@ -1,9 +1,13 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
+
 Current Version: v0.7
+
 Version Released: 08/03/2018
 
+
 New Contributers Welcomed!
+
 Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title if interested.
 
 ## Overview
