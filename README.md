@@ -23,11 +23,18 @@ The module uses a web scraping technique for retrieving the data, thus eliminati
 ```R
 $ pip install yahoofinancials
 ```
-2. Installation using github
+2. Installation using github:
 ```R
 $ git clone https://github.com/JECSand/yahoofinancials.git
 $ cd yahoofinancials
 $ python setup.py install
+```
+3. Demo using the included demo script:
+```R
+$ cd yahoofinancials
+$ python demo.py -h
+$ python demo.py
+$ python demo.py WFC C BAC
 ```
 
 ## Features
