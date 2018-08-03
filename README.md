@@ -1,7 +1,9 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
-Now Looking for New Contributers! 
+Current Version: v0.7
+Version Released: 08/03/2018
 
+New Contributers Welcomed!
 Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title if interested.
 
 ## Overview
@@ -46,7 +48,19 @@ List of Current Included Methods:
    * end_date should be entered in the 'YYYY-MM-DD' format. Last day that stock data will be pulled.
    * time_interval can be either 'daily', 'weekly', or 'monthly'. Parameter determines the time period interval.
 
-### New Methods Added in v0.3
+### 10 New Module Methods Added in v0.7
+* get_interest_expense():
+* get_operating_income():
+* get_total_operating_expense():
+* get_total_revenue():
+* get_cost_of_revenue():
+* get_income_before_tax():
+* get_income_tax_expense():
+* get_gross_profit():
+* get_net_income_from_continuing_ops():
+* get_research_and_development():
+
+### Module Methods
 * get_current_price():
 * get_current_change():
 * get_current_percent_change():

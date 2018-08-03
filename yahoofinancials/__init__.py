@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.6
+Version: 0.7
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 7/18/2018
+Version Released: 8/03/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -283,7 +283,7 @@ class YahooFinanceETL(object):
                 stmt_id = key
                 i += 1
         if i != 1:
-            sys.exit(1)
+            return None
         return stmt_id
 
     # Private Method for the Reformat Process
@@ -291,6 +291,8 @@ class YahooFinanceETL(object):
         final_data_list = []
         if raw_data is not None:
             stmt_id = self._get_stmt_id(statement_type, raw_data)
+            if stmt_id is None:
+                return final_data_list
             hashed_data_list = raw_data[stmt_id]
             for data_item in hashed_data_list:
                 data_date = ''
@@ -338,17 +340,17 @@ class YahooFinanceETL(object):
     def get_reformatted_stmt_data(self, raw_data, statement_type):
         data_dict = {}
         sub_dict = {}
-        dataType = raw_data['dataType']
+        data_type = raw_data['dataType']
         if isinstance(self.ticker, str):
             sub_dict_ent = self._get_sub_dict_ent(self.ticker, raw_data, statement_type)
             sub_dict.update(sub_dict_ent)
-            dict_ent = {dataType: sub_dict}
+            dict_ent = {data_type: sub_dict}
             data_dict.update(dict_ent)
         else:
             for tick in self.ticker:
                 sub_dict_ent = self._get_sub_dict_ent(tick, raw_data, statement_type)
                 sub_dict.update(sub_dict_ent)
-            dict_ent = {dataType: sub_dict}
+            dict_ent = {data_type: sub_dict}
             data_dict.update(dict_ent)
         return data_dict
 
@@ -439,16 +441,16 @@ class YahooFinancials(YahooFinanceETL):
     # Private Method for Functions needing stock_price_data
     def _stock_price_data(self, data_field):
         if isinstance(self.ticker, str):
-             return self.get_stock_price_data()[self.ticker][data_field]
+            return self.get_stock_price_data()[self.ticker].get(data_field, None)
         else:
-            return {tick: self.get_stock_price_data()[tick][data_field] for tick in self.ticker}
+            return {tick: self.get_stock_price_data()[tick].get(data_field, None) for tick in self.ticker}
 
     # Private Method for Functions needing stock_price_data
     def _stock_summary_data(self, data_field):
         if isinstance(self.ticker, str):
-            return self.get_stock_summary_data()[self.ticker][data_field]
+            return self.get_stock_summary_data()[self.ticker].get(data_field, None)
         else:
-            return {tick: self.get_stock_summary_data()[tick][data_field] for tick in self.ticker}
+            return {tick: self.get_stock_summary_data()[tick].get(data_field, None) for tick in self.ticker}
 
     # Private Method for Functions needing financial statement data
     def _financial_statement_data(self, stmt_type, stmt_code, field_name, freq):
@@ -462,7 +464,10 @@ class YahooFinancials(YahooFinanceETL):
         else:
             data = {}
             for tick in self.ticker:
-                date_key = re_data[tick][0].keys()[0]
+                try:
+                    date_key = re_data[tick][0].keys()[0]
+                except:
+                    date_key = list(re_data[tick][0].keys())[0]
                 sub_data = re_data[tick][0][date_key][field_name]
                 data.update({tick: sub_data})
         return data
@@ -561,11 +566,50 @@ class YahooFinancials(YahooFinanceETL):
     def get_net_income(self):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'netIncome', 'annual')
 
+    def get_interest_expense(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'interestExpense', 'annual')
+
+    def get_operating_income(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'operatingIncome', 'annual')
+
+    def get_total_operating_expense(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'totalOperatingExpenses', 'annual')
+
+    def get_total_revenue(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'totalRevenue', 'annual')
+
+    def get_cost_of_revenue(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'costOfRevenue', 'annual')
+
+    def get_income_before_tax(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'incomeBeforeTax', 'annual')
+
+    def get_income_tax_expense(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'incomeTaxExpense', 'annual')
+
+    def get_gross_profit(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'grossProfit', 'annual')
+
+    def get_net_income_from_continuing_ops(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'netIncomeFromContinuingOps', 'annual')
+
+    def get_research_and_development(self):
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'researchDevelopment', 'annual')
+
     # Calculated Financial Methods
     def get_earnings_per_share(self):
         price_data = self.get_current_price()
         pe_ratio = self.get_pe_ratio()
         if isinstance(self.ticker, str):
-            return price_data / pe_ratio
+            if price_data is not None and pe_ratio is not None:
+                return price_data / pe_ratio
+            else:
+                return None
         else:
-            return {tick: price_data[tick] / pe_ratio[tick] for tick in self.ticker}
+            ret_obj = {}
+            for tick in self.ticker:
+                if price_data[tick] is not None and pe_ratio[tick] is not None:
+                    ret_obj.update({tick: price_data[tick] / pe_ratio[tick]})
+                else:
+                    ret_obj.update({tick: None})
+            return ret_obj
