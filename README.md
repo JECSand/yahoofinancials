@@ -20,10 +20,15 @@ The module uses a web scraping technique for retrieving the data, thus eliminati
 * the package depends on beautifulsoup4 and requests to work
 
 1. Installation using pip:
+* Linux/Mac:
 ```R
 $ pip install yahoofinancials
 ```
-2. Installation using github:
+* Windows (If python doesn't work for you in cmd, try running the following command with just py):
+```R
+> python -m pip install yahoofinancials
+```
+2. Installation using github (Mac/Linux):
 ```R
 $ git clone https://github.com/JECSand/yahoofinancials.git
 $ cd yahoofinancials
@@ -37,12 +42,12 @@ $ python demo.py
 $ python demo.py WFC C BAC
 ```
 
-## Features
-Financial Data is returned as JSON.
-Run multiple stocks at once in groupings
-Works on most versions of python 2 and 3
-List of Current Included Methods:
+## Module Methods
+* The financial data from all methods is returned as JSON.
+* You can run multiple stocks at once using an inputted array or run an individual stock using an inputted string.
+* YahooFinancials works on most versions of python 2 and 3 and runs on all operating systems. (Windows, Mac, Linux)
 
+### Featured Methods
 1. get_financial_stmts(frequency, statement_type, reformat=True)
    * frequency can be either 'annual' or 'quarterly'.
    * statement_type can be 'income', 'balance', 'cash' or a list of several.
@@ -71,7 +76,7 @@ List of Current Included Methods:
 * get_net_income_from_continuing_ops():
 * get_research_and_development():
 
-### Module Methods
+### Additional Module Methods
 * get_current_price():
 * get_current_change():
 * get_current_percent_change():
