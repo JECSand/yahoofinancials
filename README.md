@@ -1,9 +1,9 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
 
-Current Version: v0.7
+Current Version: v0.8
 
-Version Released: 08/03/2018
+Version Released: 08/11/2018
 
 
 New Contributers Welcomed!
@@ -64,7 +64,11 @@ $ python demo.py WFC C BAC
    * end_date should be entered in the 'YYYY-MM-DD' format. Last day that stock data will be pulled.
    * time_interval can be either 'daily', 'weekly', or 'monthly'. Parameter determines the time period interval.
 
-### 10 New Module Methods Added in v0.7
+### New Module Method Added in v0.8
+* get_num_shares_outstanding(price_type='current'):
+price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
+
+### Additional Module Methods
 * get_interest_expense():
 * get_operating_income():
 * get_total_operating_expense():
@@ -75,8 +79,6 @@ $ python demo.py WFC C BAC
 * get_gross_profit():
 * get_net_income_from_continuing_ops():
 * get_research_and_development():
-
-### Additional Module Methods
 * get_current_price():
 * get_current_change():
 * get_current_percent_change():

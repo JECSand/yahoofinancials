@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.7
+Version: 0.8
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/03/2018
+Version Released: 8/11/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -201,6 +201,8 @@ class YahooFinanceETL(object):
     # Private method to clean summary and price reports
     def _clean_reports(self, raw_data):
         cleaned_dict = {}
+        if raw_data is None:
+            return None
         for k, v in raw_data.items():
             if 'Time' in k:
                 formatted_utc_time = self._format_time(v)
@@ -441,16 +443,32 @@ class YahooFinancials(YahooFinanceETL):
     # Private Method for Functions needing stock_price_data
     def _stock_price_data(self, data_field):
         if isinstance(self.ticker, str):
+            if self.get_stock_price_data()[self.ticker] is None:
+                return None
             return self.get_stock_price_data()[self.ticker].get(data_field, None)
         else:
-            return {tick: self.get_stock_price_data()[tick].get(data_field, None) for tick in self.ticker}
+            ret_obj = {}
+            for tick in self.ticker:
+                if self.get_stock_price_data()[tick] is None:
+                    ret_obj.update({tick: None})
+                else:
+                    ret_obj.update({tick: self.get_stock_price_data()[tick].get(data_field, None)})
+            return ret_obj
 
     # Private Method for Functions needing stock_price_data
     def _stock_summary_data(self, data_field):
         if isinstance(self.ticker, str):
+            if self.get_stock_summary_data()[self.ticker] is None:
+                return None
             return self.get_stock_summary_data()[self.ticker].get(data_field, None)
         else:
-            return {tick: self.get_stock_summary_data()[tick].get(data_field, None) for tick in self.ticker}
+            ret_obj = {}
+            for tick in self.ticker:
+                if self.get_stock_summary_data()[tick] is None:
+                    ret_obj.update({tick: None})
+                else:
+                    ret_obj.update({tick: self.get_stock_summary_data()[tick].get(data_field, None)})
+            return ret_obj
 
     # Private Method for Functions needing financial statement data
     def _financial_statement_data(self, stmt_type, stmt_code, field_name, freq):
@@ -610,6 +628,46 @@ class YahooFinancials(YahooFinanceETL):
             for tick in self.ticker:
                 if price_data[tick] is not None and pe_ratio[tick] is not None:
                     ret_obj.update({tick: price_data[tick] / pe_ratio[tick]})
+                else:
+                    ret_obj.update({tick: None})
+            return ret_obj
+
+    def get_num_shares_outstanding(self, price_type='current'):
+        today_low = self._stock_summary_data('dayHigh')
+        today_high = self._stock_summary_data('dayLow')
+        cur_market_cap = self._stock_summary_data('marketCap')
+        if isinstance(self.ticker, str):
+            if cur_market_cap is not None:
+                if price_type == 'current':
+                    current = self.get_current_price()
+                    if current is not None:
+                        today_average = current
+                    else:
+                        return None
+                else:
+                    if today_high is not None and today_low is not None:
+                        today_average = (today_high + today_low) / 2
+                    else:
+                        return None
+                return cur_market_cap / today_average
+            else:
+                return None
+        else:
+            ret_obj = {}
+            for tick in self.ticker:
+                if cur_market_cap[tick] is not None:
+                    if price_type == 'current':
+                        current = self.get_current_price()
+                        if current[tick] is not None:
+                            ret_obj.update({tick: cur_market_cap[tick] / current[tick]})
+                        else:
+                            ret_obj.update({tick: None})
+                    else:
+                        if today_low[tick] is not None and today_high[tick] is not None:
+                            today_average = (today_high[tick] + today_low[tick]) / 2
+                            ret_obj.update({tick: cur_market_cap[tick] / today_average})
+                        else:
+                            ret_obj.update({tick: None})
                 else:
                     ret_obj.update({tick: None})
             return ret_obj

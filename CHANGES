@@ -6,5 +6,6 @@
 0.6  07/06/2018 -- Added exception handler that returns a ticker with no available data with a null value.
 0.7  08/03/2018 -- Merged Slyvandb's improvements into the master branch.
 0.7  08/03/2018 -- Added a try catch at line 465 to explicitly type cast the dict keys to a list if the initial attempt fails.
-0.7  08/03/2018 -- Added 10 new income statement history methods beginning at line 567
-0.7  08/03/2018 -- Added a fix for trevorwelch's open issue involving the unnecessary sys.exit(1) on line 286 by replacing it with return None
+0.7  08/03/2018 -- Added 10 new income statement history methods beginning at line 567.
+0.7  08/03/2018 -- Added a fix for trevorwelch's open issue involving the unnecessary sys.exit(1) on line 286 by replacing it with return None.
+0.8  08/11/2018 -- Added a new method to get the current day's shares outstanding called get_num_shares_outstanding() starting on line 617.
