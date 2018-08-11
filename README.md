@@ -66,7 +66,7 @@ $ python demo.py WFC C BAC
 
 ### New Module Method Added in v0.8
 * get_num_shares_outstanding(price_type='current'):
-price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
+  - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
 ### Additional Module Methods
 * get_interest_expense():
