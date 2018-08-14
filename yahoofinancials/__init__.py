@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.8
+Version: 0.9
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/11/2018
+Version Released: 8/14/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -25,20 +25,21 @@ List of Included Functions:
 4) get_stock_summary_data(reformat=True)
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 5) get_stock_quote_type_data()
-6) get_historical_stock_data(start_date, end_date, time_interval)
-   - start_date should be entered in the 'YYYY-MM-DD' format. First day that stock data will be pulled.
-   - end_date should be entered in the 'YYYY-MM-DD' format. Last day that stock data will be pulled.
+6) get_historical_price_data(start_date, end_date, time_interval)
+   - Gets historical price data for currencies, stocks, indexes, cryptocurrencies, and commodity futures.
+   - start_date should be entered in the 'YYYY-MM-DD' format. First day that financial data will be pulled.
+   - end_date should be entered in the 'YYYY-MM-DD' format. Last day that financial data will be pulled.
    - time_interval can be either 'daily', 'weekly', or 'monthly'. Parameter determines the time period interval.
 
 Usage Examples:
 from yahoofinancials import YahooFinancials
 #tickers = 'AAPL'
 #or
-tickers = ['AAPL', 'WFC', 'F']
+tickers = ['AAPL', 'WFC', 'F', 'JPY=X', 'XRP-USD', 'GC=F']
 yahoo_financials = YahooFinancials(tickers)
 balance_sheet_data = yahoo_financials.get_financial_stmts('quarterly', 'balance')
 earnings_data = yahoo_financials.get_stock_earnings_data()
-historical_stock_prices = yahoo_financials.get_historical_stock_data('2015-01-15', '2017-10-15', 'weekly')
+historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
 """
 
 import sys
@@ -224,10 +225,16 @@ class YahooFinanceETL(object):
             cleaned_dict.update(dict_ent)
         return cleaned_dict
 
+    # Private Static Method to ensure ticker is URL encoded
+    @staticmethod
+    def _encode_ticker(ticker_str):
+        encoded_ticker = ticker_str.replace('=', '%3D')
+        return encoded_ticker
+
     # Private method to get time interval code
     def _build_historical_url(self, ticker, hist_oj):
-        url = self._BASE_YAHOO_URL + ticker + '/history?period1=' + str(hist_oj['start']) + '&period2=' + \
-              str(hist_oj['end']) + '&interval=' + hist_oj['interval'] + '&filter=history&frequency=' + \
+        url = self._BASE_YAHOO_URL + self._encode_ticker(ticker) + '/history?period1=' + str(hist_oj['start']) + \
+              '&period2=' + str(hist_oj['end']) + '&interval=' + hist_oj['interval'] + '&filter=history&frequency=' + \
               hist_oj['interval']
         return url
 
@@ -235,7 +242,21 @@ class YahooFinanceETL(object):
     def _clean_historical_data(self, hist_data):
         data = {}
         for k, v in hist_data.items():
-            if 'date' in k.lower():
+            if k == 'eventsData':
+                event_obj = {}
+                if isinstance(v, list):
+                    dict_ent = {k: event_obj}
+                else:
+                    for type_key, type_obj in v.items():
+                        formatted_type_obj = {}
+                        for date_key, date_obj in type_obj.items():
+                            formatted_date_key = self.format_date(int(date_key))
+                            cleaned_date = self.format_date(int(date_obj['date']))
+                            date_obj.update({u'' + 'formatted_date': cleaned_date})
+                            formatted_type_obj.update({formatted_date_key: date_obj})
+                        event_obj.update({type_key: formatted_type_obj})
+                    dict_ent = {k: event_obj}
+            elif 'date' in k.lower():
                 cleaned_date = self.format_date(v)
                 dict_ent = {k: {u'' + 'formatted_date': cleaned_date, 'date': v}}
             elif isinstance(v, list):
@@ -248,6 +269,62 @@ class YahooFinanceETL(object):
                 dict_ent = {k: v}
             data.update(dict_ent)
         return data
+
+    # Private Static Method to build API url for GET Request
+    @staticmethod
+    def _build_api_url(hist_obj, up_ticker):
+        base_url = "https://query1.finance.yahoo.com/v8/finance/chart/"
+        api_url = base_url + up_ticker + '?symbol= ' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' +\
+                  str(hist_obj['end']) + '&interval=' + hist_obj['interval']
+        api_url += '&events=div|split|earn'
+        return api_url
+
+    # Private Static Method to get financial data via API Call
+    @staticmethod
+    def _get_api_data(api_url):
+        response = requests.get(api_url)
+        if sys.version_info < (3, 0):
+            return loads(response.content)
+        return loads(response.content.decode('utf-8'))
+
+    # Private Method to clean API data
+    def _clean_api_data(self, api_url):
+        raw_data = self._get_api_data(api_url)
+        ret_obj = {}
+        ret_obj.update({'eventsData': []})
+        results = raw_data['chart']['result']
+        if results is None:
+            return ret_obj
+        for result in results:
+            tz_sub_dict = {}
+            ret_obj.update({'eventsData': result.get('events', {})})
+            ret_obj.update({'firstTradeDate': result['meta'].get('firstTradeDate', 'NA')})
+            ret_obj.update({'currency': result['meta'].get('currency', 'NA')})
+            ret_obj.update({'instrumentType': result['meta'].get('instrumentType', 'NA')})
+            tz_sub_dict.update({'gmtOffset': result['meta']['gmtoffset']})
+            ret_obj.update({'timeZone': tz_sub_dict})
+            timestamp_list = result['timestamp']
+            high_price_list = result['indicators']['quote'][0]['high']
+            low_price_list = result['indicators']['quote'][0]['low']
+            open_price_list = result['indicators']['quote'][0]['open']
+            close_price_list = result['indicators']['quote'][0]['close']
+            volume_list = result['indicators']['quote'][0]['volume']
+            adj_close_list = result['indicators']['adjclose'][0]['adjclose']
+            i = 0
+            prices_list = []
+            for timestamp in timestamp_list:
+                price_dict = {}
+                price_dict.update({'date': timestamp})
+                price_dict.update({'high': high_price_list[i]})
+                price_dict.update({'low': low_price_list[i]})
+                price_dict.update({'open': open_price_list[i]})
+                price_dict.update({'close': close_price_list[i]})
+                price_dict.update({'volume': volume_list[i]})
+                price_dict.update({'adjclose': adj_close_list[i]})
+                prices_list.append(price_dict)
+                i += 1
+            ret_obj.update({'prices': prices_list})
+        return ret_obj
 
     # Private Method to take scrapped data and build a data dictionary with
     def _create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
@@ -269,10 +346,15 @@ class YahooFinanceETL(object):
         else:
             YAHOO_URL = self._build_historical_url(up_ticker, hist_obj)
             try:
-                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+                api_url = self._build_api_url(hist_obj, up_ticker)
+                re_data = self._clean_api_data(api_url)
                 cleaned_re_data = self._clean_historical_data(re_data)
             except KeyError:
-                cleaned_re_data = None
+                try:
+                    re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
+                    cleaned_re_data = self._clean_historical_data(re_data)
+                except KeyError:
+                    cleaned_re_data = None
             dict_ent = {up_ticker: cleaned_re_data}
         return dict_ent
 
@@ -361,16 +443,28 @@ class YahooFinanceETL(object):
         cleaned_data_dict = {}
         if isinstance(self.ticker, str):
             if report_type == 'earnings':
-                cleaned_data = self._clean_earnings_data(raw_report_data[self.ticker])
+                try:
+                    cleaned_data = self._clean_earnings_data(raw_report_data[self.ticker])
+                except:
+                    cleaned_data = None
             else:
-                cleaned_data = self._clean_reports(raw_report_data[self.ticker])
+                try:
+                    cleaned_data = self._clean_reports(raw_report_data[self.ticker])
+                except:
+                    cleaned_data = None
             cleaned_data_dict.update({self.ticker: cleaned_data})
         else:
             for tick in self.ticker:
                 if report_type == 'earnings':
-                    cleaned_data = self._clean_earnings_data(raw_report_data[tick])
+                    try:
+                        cleaned_data = self._clean_earnings_data(raw_report_data[tick])
+                    except:
+                        cleaned_data = None
                 else:
-                    cleaned_data = self._clean_reports(raw_report_data[tick])
+                    try:
+                        cleaned_data = self._clean_reports(raw_report_data[tick])
+                    except:
+                        cleaned_data = None
                 cleaned_data_dict.update({tick: cleaned_data})
         return cleaned_data_dict
 
@@ -431,8 +525,19 @@ class YahooFinancials(YahooFinanceETL):
     def get_stock_quote_type_data(self):
         return self.get_stock_tech_data('quoteType')
 
-    # Public Method for user to get historical stock data with
+    # Public Method for user to get historical stock data with (SOON TO BE DEPRECIATED IN V1.0)
     def get_historical_stock_data(self, start_date, end_date, time_interval):
+        interval_code = self.get_time_code(time_interval)
+        start = self.format_date(start_date)
+        end = self.format_date(end_date)
+        hist_obj = {'start': start, 'end': end, 'interval': interval_code}
+        data = self.get_stock_data('history', hist_obj=hist_obj)
+        print("***WARNING: AS OF v0.9 'get_historical_stock_data()' IS DEPRECIATED AND WILL BE REMOVED IN THE "
+              "v1.0 RELEASE.***\n***PLEASE USE 'get_historical_price_data()' INSTEAD.***")
+        return data
+
+    # Public Method for user to get historical stock data with (SOON TO BE DEPRECIATED IN V1.0)
+    def get_historical_price_data(self, start_date, end_date, time_interval):
         interval_code = self.get_time_code(time_interval)
         start = self.format_date(start_date)
         end = self.format_date(end_date)
@@ -485,9 +590,15 @@ class YahooFinancials(YahooFinanceETL):
                 try:
                     date_key = re_data[tick][0].keys()[0]
                 except:
-                    date_key = list(re_data[tick][0].keys())[0]
-                sub_data = re_data[tick][0][date_key][field_name]
-                data.update({tick: sub_data})
+                    try:
+                        date_key = list(re_data[tick][0].keys())[0]
+                    except:
+                        date_key = None
+                if date_key is not None:
+                    sub_data = re_data[tick][0][date_key][field_name]
+                    data.update({tick: sub_data})
+                else:
+                    data.update({tick: None})
         return data
 
     # Public Price Data Methods
