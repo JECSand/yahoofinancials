@@ -5,14 +5,14 @@ except ImportError:
 
 setup(
     name='yahoofinancials',
-    version='0.8',
-    description='A powerful financial data module used for pulling fundamental and technical stock data from Yahoo Finance',
+    version='0.9',
+    description='A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance',
     url='https://github.com/JECSand/yahoofinancials',
-    download_url='https://github.com/JECSand/yahoofinancials/archive/0.8.tar.gz',
+    download_url='https://github.com/JECSand/yahoofinancials/archive/0.9.tar.gz',
     author='Connor Sanders',
     author_email='connor@exceleri.com',
     license='MIT',
-    keywords = ['finance data', 'stocks', 'yahoo finance'],
+    keywords = ['finance data', 'stocks', 'commodities', 'cryptocurrencies', 'currencies', 'forex', 'yahoo finance'],
     packages=['yahoofinancials'],
     install_requires=[
         "requests",
