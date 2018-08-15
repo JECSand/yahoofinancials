@@ -11,3 +11,5 @@
 0.8  08/11/2018 -- Added a new method to get the current day's shares outstanding called get_num_shares_outstanding() starting on line 617.
 0.9  08/14/2018 -- Added a new method called get_historical_price_data() to get price data for commodity futures, indexes, currencies, and cryptos in addition to stocks.
 0.9  08/14/2018 -- Depreciated the get_historical_stock_data() method and scheduled it's removal for version 1.0.
+0.10  08/14/2018 -- Added a new Method to get summary data for stocks, indexes, cryptocurrencies, currencies, and commodity futures, get_summary_data().
+0.10  08/14/2018 -- Depreciated the get_stock_summary_data() method and scheduled it's removal for version 1.0.

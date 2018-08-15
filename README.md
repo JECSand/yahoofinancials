@@ -1,7 +1,7 @@
 # yahoofinancials
 Welcome to Yahoo Financials!
 
-Current Version: v0.9
+Current Version: v0.10
 
 Version Released: 08/14/2018
 
@@ -11,8 +11,7 @@ Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title i
 
 ## Overview
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
-* As of Version 0.9, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, currencies, indexes, and stocks.
-
+* As of Version 0.10, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, ETFs, mutual funds, U.S. Treasuries, currencies, indexes, and stocks.
 
 ## Installation
 * yahoofinancials runs fine on most versions of python 2 and 3.
@@ -56,12 +55,14 @@ $ python demo.py WFC C BAC
    * reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 3. get_stock_earnings_data(reformat=True)
    * reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
-4. get_stock_summary_data(reformat=True)
+4. get_summary_data(reformat=True)
+   * New in v0.10.
+   * Returns financial summary data for cryptocurrencies, stocks, currencies, ETFs, mutual funds, U.S. Treasuries, commodity futures, and indexes.
    * reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 5. get_stock_quote_type_data()
 6. get_historical_price_data(start_date, end_date, time_interval)
    * New in v0.9.
-   * This method will pull historical pricing data for stocks, currencies, cryptocurrencies, commodities, and indexes.
+   * This method will pull historical pricing data for stocks, currencies, ETFs, mutual funds, U.S. Treasuries, cryptocurrencies, commodities, and indexes.
    * start_date should be entered in the 'YYYY-MM-DD' format and is the first day that data will be pulled for.
    * end_date should be entered in the 'YYYY-MM-DD' format and is the last day that data will be pulled for.
    * time_interval can be either 'daily', 'weekly', or 'monthly'. This variable determines the time period interval for your pull.
@@ -69,7 +70,9 @@ $ python demo.py WFC C BAC
 7. get_num_shares_outstanding(price_type='current'):
    * price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-### Methods Depreciated in v0.9
+### Methods Depreciated in v0.9 & v0.10
+* get_stock_summary_data():
+  - Scheduled for removal in v1.0
 * get_historical_stock_data():
   - Scheduled for removal in v1.0
 
@@ -145,12 +148,16 @@ bank_stocks = ['WFC', 'BAC', 'C']
 commodity_futures = ['GC=F', 'SI=F', 'CL=F']
 cryptocurrencies = ['BTC-USD', 'ETH-USD', 'XRP-USD']
 currencies = ['EURUSD=X', 'JPY=X', 'GBPUSD=X']
+mutual_funds = ['PRLAX', 'QASGX', 'HISFX']
+us_treasuries = ['^TNX', '^IRX', '^TYX']
 
 yahoo_financials_tech = YahooFinancials(tech_stocks)
 yahoo_financials_banks = YahooFinancials(bank_stocks)
 yahoo_financials_commodities = YahooFinancials(commodity_futures)
 yahoo_financials_cryptocurrencies = YahooFinancials(cryptocurrencies)
 yahoo_financials_currencies = YahooFinancials(currencies)
+yahoo_financials_mutualfunds = YahooFinancials(mutual_funds)
+yahoo_financials_treasuries = YahooFinancials(us_treasuries)
 
 tech_cash_flow_data_an = yahoo_financials_tech.get_financial_stmts('annual', 'cash')
 bank_cash_flow_data_an = yahoo_financials_banks.get_financial_stmts('annual', 'cash')
@@ -161,6 +168,8 @@ daily_bank_stock_prices = yahoo_financials_banks.get_historical_price_data('2008
 daily_commodity_prices = yahoo_financials_commodities.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
 daily_crypto_prices = yahoo_financials_cryptocurrencies.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
 daily_currency_prices = yahoo_financials_currencies.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
+daily_mutualfund_prices = yahoo_financials_mutualfunds.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
+daily_treasury_prices = yahoo_financials_treasuries.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
 ```
 
 ## Examples of Returned JSON Data
@@ -451,6 +460,80 @@ print(yahoo_financials.get_stock_quote_type_data())
         "longName": "Apple Inc.",
         "market": "us_market",
         "quoteType": "EQUITY"
+    }
+}
+```
+9. U.S. Treasury Current Pricing Data:
+```R
+yahoo_financials = YahooFinancials(['^TNX', '^IRX', '^TYX'])
+print(yahoo_financials.get_current_price())
+```
+```javascript
+{
+    "^IRX": 2.033,
+    "^TNX": 2.895,
+    "^TYX": 3.062
+}
+```
+10. BTC-USD Summary Data:
+```R
+yahoo_financials = YahooFinancials('BTC-USD')
+print(yahoo_financials.get_summary_data())
+```
+```javascript
+{
+    "BTC-USD": {
+        "algorithm": "SHA256",
+        "ask": null,
+        "askSize": null,
+        "averageDailyVolume10Day": 545573809,
+        "averageVolume": 496761640,
+        "averageVolume10days": 545573809,
+        "beta": null,
+        "bid": null,
+        "bidSize": null,
+        "circulatingSupply": 17209812,
+        "currency": "USD",
+        "dayHigh": 6266.5,
+        "dayLow": 5891.87,
+        "dividendRate": null,
+        "dividendYield": null,
+        "exDividendDate": "-",
+        "expireDate": "-",
+        "fiftyDayAverage": 6989.074,
+        "fiftyTwoWeekHigh": 19870.62,
+        "fiftyTwoWeekLow": 2979.88,
+        "fiveYearAvgDividendYield": null,
+        "forwardPE": null,
+        "fromCurrency": "BTC",
+        "lastMarket": "CCCAGG",
+        "marketCap": 106325663744,
+        "maxAge": 1,
+        "maxSupply": 21000000,
+        "navPrice": null,
+        "open": 6263.2,
+        "openInterest": null,
+        "payoutRatio": null,
+        "previousClose": 6263.2,
+        "priceHint": 2,
+        "priceToSalesTrailing12Months": null,
+        "regularMarketDayHigh": 6266.5,
+        "regularMarketDayLow": 5891.87,
+        "regularMarketOpen": 6263.2,
+        "regularMarketPreviousClose": 6263.2,
+        "regularMarketVolume": 755834368,
+        "startDate": "2009-01-03",
+        "strikePrice": null,
+        "totalAssets": null,
+        "tradeable": false,
+        "trailingAnnualDividendRate": null,
+        "trailingAnnualDividendYield": null,
+        "twoHundredDayAverage": 8165.154,
+        "volume": 755834368,
+        "volume24Hr": 750196480,
+        "volumeAllCurrencies": 2673437184,
+        "yield": null,
+        "ytdReturn": null
     }
 }
 ```

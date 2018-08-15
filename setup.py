@@ -5,10 +5,10 @@ except ImportError:
 
 setup(
     name='yahoofinancials',
-    version='0.9',
+    version='0.10',
     description='A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance',
     url='https://github.com/JECSand/yahoofinancials',
-    download_url='https://github.com/JECSand/yahoofinancials/archive/0.9.tar.gz',
+    download_url='https://github.com/JECSand/yahoofinancials/archive/0.10.tar.gz',
     author='Connor Sanders',
     author_email='connor@exceleri.com',
     license='MIT',
