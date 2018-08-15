@@ -1,7 +1,7 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.9
+Version: 0.10
 ==============================
 
 Author: Connor Sanders
@@ -22,7 +22,7 @@ List of Included Functions:
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 3) get_stock_earnings_data(reformat=True)
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
-4) get_stock_summary_data(reformat=True)
+4) get_summary_data(reformat=True)
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 5) get_stock_quote_type_data()
 6) get_historical_price_data(start_date, end_date, time_interval)
@@ -510,6 +510,15 @@ class YahooFinancials(YahooFinanceETL):
 
     # Public Method for the user to get stock summary data
     def get_stock_summary_data(self, reformat=True):
+        print("***WARNING: AS OF v0.10 'get_stock_summary_data()' IS DEPRECIATED AND WILL BE REMOVED IN THE "
+              "v1.0 RELEASE.***\n***PLEASE USE 'get_summary_data()' INSTEAD.***")
+        if reformat:
+            return self.get_clean_data(self.get_stock_tech_data('summaryDetail'), 'summaryDetail')
+        else:
+            return self.get_stock_tech_data('summaryDetail')
+
+    # Public Method for the user to get stock summary data
+    def get_summary_data(self, reformat=True):
         if reformat:
             return self.get_clean_data(self.get_stock_tech_data('summaryDetail'), 'summaryDetail')
         else:
@@ -563,16 +572,16 @@ class YahooFinancials(YahooFinanceETL):
     # Private Method for Functions needing stock_price_data
     def _stock_summary_data(self, data_field):
         if isinstance(self.ticker, str):
-            if self.get_stock_summary_data()[self.ticker] is None:
+            if self.get_summary_data()[self.ticker] is None:
                 return None
-            return self.get_stock_summary_data()[self.ticker].get(data_field, None)
+            return self.get_summary_data()[self.ticker].get(data_field, None)
         else:
             ret_obj = {}
             for tick in self.ticker:
-                if self.get_stock_summary_data()[tick] is None:
+                if self.get_summary_data()[tick] is None:
                     ret_obj.update({tick: None})
                 else:
-                    ret_obj.update({tick: self.get_stock_summary_data()[tick].get(data_field, None)})
+                    ret_obj.update({tick: self.get_summary_data()[tick].get(data_field, None)})
             return ret_obj
 
     # Private Method for Functions needing financial statement data
@@ -720,7 +729,8 @@ class YahooFinancials(YahooFinanceETL):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'grossProfit', 'annual')
 
     def get_net_income_from_continuing_ops(self):
-        return self._financial_statement_data('income', 'incomeStatementHistory', 'netIncomeFromContinuingOps', 'annual')
+        return self._financial_statement_data('income', 'incomeStatementHistory',
+                                              'netIncomeFromContinuingOps', 'annual')
 
     def get_research_and_development(self):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'researchDevelopment', 'annual')
