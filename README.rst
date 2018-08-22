@@ -15,6 +15,7 @@ Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title i
 Overview
 --------
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
+
 - As of Version 0.10, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, ETFs, mutual funds, U.S. Treasuries, currencies, indexes, and stocks.
 
 Installation
@@ -24,21 +25,26 @@ Installation
 - The package depends on beautifulsoup4 and pytz to work.
 
 1. Installation using pip:
+
 - Linux/Mac:
+
 .. code:: bash
     $ pip install yahoofinancials
 
 - Windows (If python doesn't work for you in cmd, try running the following command with just py):
+
 .. code:: bash
     > python -m pip install yahoofinancials
 
 2. Installation using github (Mac/Linux):
+
 .. code:: bash
     $ git clone https://github.com/JECSand/yahoofinancials.git
     $ cd yahoofinancials
     $ python setup.py install
 
 3. Demo using the included demo script:
+
 .. code:: bash
     $ cd yahoofinancials
     $ python demo.py -h
@@ -46,6 +52,7 @@ Installation
     $ python demo.py WFC C BAC
 
 4. Test using the included unit testing script:
+
 .. code:: bash
     $ cd yahoofinancials
     $ python test/test_yahoofinancials.py
@@ -59,26 +66,33 @@ Module Methods
 Featured Methods
 ^^^^^^^^^^^^^^^^
 1. get_financial_stmts(frequency, statement_type, reformat=True)
+
    - frequency can be either 'annual' or 'quarterly'.
    - statement_type can be 'income', 'balance', 'cash' or a list of several.
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 2. get_stock_price_data(reformat=True)
+
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 3. get_stock_earnings_data(reformat=True)
+
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 4. get_summary_data(reformat=True)
+
    - New in v0.10.
    - Returns financial summary data for cryptocurrencies, stocks, currencies, ETFs, mutual funds, U.S. Treasuries, commodity futures, and indexes.
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 5. get_stock_quote_type_data()
+
 6. get_historical_price_data(start_date, end_date, time_interval)
+
    - New in v0.9.
    - This method will pull historical pricing data for stocks, currencies, ETFs, mutual funds, U.S. Treasuries, cryptocurrencies, commodities, and indexes.
    - start_date should be entered in the 'YYYY-MM-DD' format and is the first day that data will be pulled for.
    - end_date should be entered in the 'YYYY-MM-DD' format and is the last day that data will be pulled for.
    - time_interval can be either 'daily', 'weekly', or 'monthly'. This variable determines the time period interval for your pull.
    - Data response includes relevant pricing event data such as dividends and stock splits.
-7. get_num_shares_outstanding(price_type='current'):
+7. get_num_shares_outstanding(price_type='current')
+
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
 Methods Removed in V1.0
@@ -138,6 +152,7 @@ Usage Examples
 
 Single Ticker Example
 ^^^^^^^^^^^^^^^^^^^^^
+
 .. code:: python
     from yahoofinancials import YahooFinancials
 
@@ -153,6 +168,7 @@ Single Ticker Example
 
 Lists of Tickers Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code:: python
     from yahoofinancials import YahooFinancials
 
@@ -186,7 +202,9 @@ Lists of Tickers Example
 
 Examples of Returned JSON Data
 ------------------------------
+
 1. Annual Income Statement Data for Apple:
+
 .. code:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'income'))
@@ -226,6 +244,7 @@ Examples of Returned JSON Data
     }
 
 2. Annual Balance Sheet Data for Apple:
+
 .. code:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'balance'))
@@ -268,6 +287,7 @@ Examples of Returned JSON Data
     }
 
 3. Quarterly Cash Flow Statement Data for Citigroup:
+
 .. code:: python
     yahoo_financials = YahooFinancials('C')
     print(yahoo_financials.get_financial_stmts('quarterly', 'cash'))
@@ -302,6 +322,7 @@ Examples of Returned JSON Data
     }
 
 4. Monthly Historical Stock Price Data for Wells Fargo:
+
 .. code:: python
     yahoo_financials = YahooFinancials('WFC')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
@@ -343,6 +364,7 @@ Examples of Returned JSON Data
     }
 
 5. Monthly Historical Price Data for EURUSD:
+
 .. code:: python
     yahoo_financials = YahooFinancials('EURUSD=X')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
@@ -376,6 +398,7 @@ Examples of Returned JSON Data
     }
 
 6. Monthly Historical Price Data for BTC-USD:
+
 .. code:: python
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
@@ -409,6 +432,7 @@ Examples of Returned JSON Data
     }
 
 7. Weekly Historical Price Data for Crude Oil Futures:
+
 .. code:: python
     yahoo_financials = YahooFinancials('CL=F')
     print(yahoo_financials.get_historical_price_data("2018-08-01", "2018-08-10", "weekly"))
@@ -452,6 +476,7 @@ Examples of Returned JSON Data
     }
 
 8. Apple Stock Quote Data:
+
 .. code:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_stock_quote_type_data())
@@ -477,6 +502,7 @@ Examples of Returned JSON Data
     }
 
 9. U.S. Treasury Current Pricing Data:
+
 .. code:: python
     yahoo_financials = YahooFinancials(['^TNX', '^IRX', '^TYX'])
     print(yahoo_financials.get_current_price())
@@ -489,6 +515,7 @@ Examples of Returned JSON Data
     }
 
 10. BTC-USD Summary Data:
+
 .. code:: python
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_summary_data())
