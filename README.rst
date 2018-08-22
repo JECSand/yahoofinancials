@@ -2,6 +2,9 @@
 yahoofinancials
 ===============
 
+.. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
+    :target: https://travis-ci.org/JECSand/yahoofinancials
+
 Welcome to Yahoo Financials!
 
 Current Version: v1.0
