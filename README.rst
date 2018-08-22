@@ -26,12 +26,12 @@ Installation
 
 1. Installation using pip:
 
-- Linux/Mac:
+Linux/Mac:
 
 .. code-block::
     $ pip install yahoofinancials
 
-- Windows (If python doesn't work for you in cmd, try running the following command with just py):
+Windows (If python doesn't work for you in cmd, try running the following command with just py):
 
 .. code-block::
     > python -m pip install yahoofinancials
