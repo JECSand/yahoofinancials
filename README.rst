@@ -213,12 +213,14 @@ Examples of Returned JSON Data
 1. Annual Income Statement Data for Apple:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'income'))
 
 Result:
+
 .. code-block::
 
     {
@@ -257,12 +259,14 @@ Result:
 2. Annual Balance Sheet Data for Apple:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'balance'))
 
 Result:
+
 .. code-block::
 
     {
@@ -304,12 +308,14 @@ Result:
 3. Quarterly Cash Flow Statement Data for Citigroup:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('C')
     print(yahoo_financials.get_financial_stmts('quarterly', 'cash'))
 
 Result:
+
 .. code-block::
 
     {
@@ -343,12 +349,14 @@ Result:
 4. Monthly Historical Stock Price Data for Wells Fargo:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('WFC')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
+
 .. code-block::
 
     {
@@ -389,12 +397,14 @@ Result:
 5. Monthly Historical Price Data for EURUSD:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('EURUSD=X')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
+
 .. code-block::
 
     {
@@ -427,12 +437,14 @@ Result:
 6. Monthly Historical Price Data for BTC-USD:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
+
 .. code-block::
 
     {
@@ -465,12 +477,14 @@ Result:
 7. Weekly Historical Price Data for Crude Oil Futures:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('CL=F')
     print(yahoo_financials.get_historical_price_data("2018-08-01", "2018-08-10", "weekly"))
 
 Result:
+
 .. code-block::
 
     {
@@ -513,12 +527,14 @@ Result:
 8. Apple Stock Quote Data:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_stock_quote_type_data())
 
 Result:
+
 .. code-block::
 
     {
@@ -543,12 +559,14 @@ Result:
 9. U.S. Treasury Current Pricing Data:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials(['^TNX', '^IRX', '^TYX'])
     print(yahoo_financials.get_current_price())
 
 Result:
+
 .. code-block::
 
     {
@@ -560,12 +578,14 @@ Result:
 10. BTC-USD Summary Data:
 
 Code:
+
 .. code-block:: python
 
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_summary_data())
 
 Result:
+
 .. code-block::
 
     {
