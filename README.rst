@@ -2,7 +2,7 @@
 yahoofinancials
 ===============
 
-A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, etf, and US Treasury financial data from Yahoo Finance.
+A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, ETF, and US Treasury financial data from Yahoo Finance.
 
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
