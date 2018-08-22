@@ -1,15 +1,19 @@
-0.1  10/13/2017 -- Initial release.
-0.2  10/20/2017 -- Added New Methods and Restructured Module Classes
-0.3  10/25/2017 -- Added New Methods and Calculated Measures
-0.4  03/06/2018 -- Fixed reported bug on line 470 of init.py by adding a try and except with suggested line of code.
-0.6  07/06/2018 -- Fixed reported bug in format_date function.
-0.6  07/06/2018 -- Added exception handler that returns a ticker with no available data with a null value.
-0.7  08/03/2018 -- Merged Slyvandb's improvements into the master branch.
-0.7  08/03/2018 -- Added a try catch at line 465 to explicitly type cast the dict keys to a list if the initial attempt fails.
-0.7  08/03/2018 -- Added 10 new income statement history methods beginning at line 567.
-0.7  08/03/2018 -- Added a fix for trevorwelch's open issue involving the unnecessary sys.exit(1) on line 286 by replacing it with return None.
-0.8  08/11/2018 -- Added a new method to get the current day's shares outstanding called get_num_shares_outstanding() starting on line 617.
-0.9  08/14/2018 -- Added a new method called get_historical_price_data() to get price data for commodity futures, indexes, currencies, and cryptos in addition to stocks.
-0.9  08/14/2018 -- Depreciated the get_historical_stock_data() method and scheduled it's removal for version 1.0.
+0.1   10/13/2017 -- Initial release.
+0.2   10/20/2017 -- Added New Methods and Restructured Module Classes
+0.3   10/25/2017 -- Added New Methods and Calculated Measures
+0.4   03/06/2018 -- Fixed reported bug on line 470 of init.py by adding a try and except with suggested line of code.
+0.6   07/06/2018 -- Fixed reported bug in format_date function.
+0.6   07/06/2018 -- Added exception handler that returns a ticker with no available data with a null value.
+0.7   08/03/2018 -- Merged Slyvandb's improvements into the master branch.
+0.7   08/03/2018 -- Added a try catch at line 465 to explicitly type cast the dict keys to a list if the initial attempt fails.
+0.7   08/03/2018 -- Added 10 new income statement history methods beginning at line 567.
+0.7   08/03/2018 -- Added a fix for trevorwelch's open issue involving the unnecessary sys.exit(1) on line 286 by replacing it with return None.
+0.8   08/11/2018 -- Added a new method to get the current day's shares outstanding called get_num_shares_outstanding() starting on line 617.
+0.9   08/14/2018 -- Added a new method called get_historical_price_data() to get price data for commodity futures, indexes, currencies, and cryptos in addition to stocks.
+0.9   08/14/2018 -- Depreciated the get_historical_stock_data() method and scheduled it's removal for version 1.0.
 0.10  08/14/2018 -- Added a new Method to get summary data for stocks, indexes, cryptocurrencies, currencies, and commodity futures, get_summary_data().
 0.10  08/14/2018 -- Depreciated the get_stock_summary_data() method and scheduled it's removal for version 1.0.
+1.0   08/22/2018 -- Removed the get_historical_stock_data() method.
+1.0   08/22/2018 -- Removed the get_stock_summary_data() method.
+1.0   08/22/2018 -- Removed the requests dependency and replaced it with urllib.
+1.0   08/22/2018 -- Updated README.md to README.rst

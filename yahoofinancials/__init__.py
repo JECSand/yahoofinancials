@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 0.10
+Version: 1.0
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/14/2018
+Version Released: 8/22/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -47,14 +47,22 @@ import re
 from json import loads
 import time
 from bs4 import BeautifulSoup
-import requests
 import datetime
 from datetime import date
 import pytz
+try:
+    from urllib import FancyURLopener
+except:
+    from urllib.request import FancyURLopener
 
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
+
+
+# Class used to open urls for financial data
+class UrlOpener(FancyURLopener):
+    version = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'
 
 
 # Class containing Yahoo Finance ETL Functionality
@@ -67,7 +75,7 @@ class YahooFinanceETL(object):
     # Minimum interval between Yahoo Finance requests for this instance
     _MIN_INTERVAL = 7
 
-    # Meta-data dictionaries for the class to use
+    # Meta-data dictionaries for the classes to use
     YAHOO_FINANCIAL_TYPES = {
         'income': ['financials', 'incomeStatementHistory', 'incomeStatementHistoryQuarterly'],
         'balance': ['balance-sheet', 'balanceSheetHistory', 'balanceSheetHistoryQuarterly', 'balanceSheetStatements'],
@@ -75,6 +83,7 @@ class YahooFinanceETL(object):
         'history': ['history']
     }
 
+    # Interval value translation dictionary
     _INTERVAL_DICT = {
         'daily': '1d',
         'weekly': '1wk',
@@ -123,10 +132,13 @@ class YahooFinanceETL(object):
                 time.sleep(self._MIN_INTERVAL - (now - _lastget) + 1)
                 now = int(time.time())
             _lastget = now
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, "html.parser")
+            urlopener = UrlOpener()
+            response = urlopener.open(url)
+            response_content = response.read()
+            soup = BeautifulSoup(response_content, "html.parser")
             script = soup.find("script", text=re.compile("root.App.main")).text
             self._cache[url] = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
+            response.close()
         data = self._cache[url]
         if tech_type == '' and statement_type != 'history':
             stores = data["context"]["dispatcher"]["stores"]["QuoteSummaryStore"]
@@ -282,10 +294,13 @@ class YahooFinanceETL(object):
     # Private Static Method to get financial data via API Call
     @staticmethod
     def _get_api_data(api_url):
-        response = requests.get(api_url)
+        urlopener = UrlOpener()
+        response = urlopener.open(api_url)
+        res_content = response.read()
+        response.close()
         if sys.version_info < (3, 0):
-            return loads(response.content)
-        return loads(response.content.decode('utf-8'))
+            return loads(res_content)
+        return loads(res_content.decode('utf-8'))
 
     # Private Method to clean API data
     def _clean_api_data(self, api_url):
@@ -509,15 +524,6 @@ class YahooFinancials(YahooFinanceETL):
             return self.get_stock_tech_data('earnings')
 
     # Public Method for the user to get stock summary data
-    def get_stock_summary_data(self, reformat=True):
-        print("***WARNING: AS OF v0.10 'get_stock_summary_data()' IS DEPRECIATED AND WILL BE REMOVED IN THE "
-              "v1.0 RELEASE.***\n***PLEASE USE 'get_summary_data()' INSTEAD.***")
-        if reformat:
-            return self.get_clean_data(self.get_stock_tech_data('summaryDetail'), 'summaryDetail')
-        else:
-            return self.get_stock_tech_data('summaryDetail')
-
-    # Public Method for the user to get stock summary data
     def get_summary_data(self, reformat=True):
         if reformat:
             return self.get_clean_data(self.get_stock_tech_data('summaryDetail'), 'summaryDetail')
@@ -534,18 +540,7 @@ class YahooFinancials(YahooFinanceETL):
     def get_stock_quote_type_data(self):
         return self.get_stock_tech_data('quoteType')
 
-    # Public Method for user to get historical stock data with (SOON TO BE DEPRECIATED IN V1.0)
-    def get_historical_stock_data(self, start_date, end_date, time_interval):
-        interval_code = self.get_time_code(time_interval)
-        start = self.format_date(start_date)
-        end = self.format_date(end_date)
-        hist_obj = {'start': start, 'end': end, 'interval': interval_code}
-        data = self.get_stock_data('history', hist_obj=hist_obj)
-        print("***WARNING: AS OF v0.9 'get_historical_stock_data()' IS DEPRECIATED AND WILL BE REMOVED IN THE "
-              "v1.0 RELEASE.***\n***PLEASE USE 'get_historical_price_data()' INSTEAD.***")
-        return data
-
-    # Public Method for user to get historical stock data with (SOON TO BE DEPRECIATED IN V1.0)
+    # Public Method for user to get historical price data with
     def get_historical_price_data(self, start_date, end_date, time_interval):
         interval_code = self.get_time_code(time_interval)
         start = self.format_date(start_date)

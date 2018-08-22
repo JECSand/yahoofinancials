@@ -25,7 +25,7 @@ mark = '-' * 64
 
 def defaultapi(ticker):
     tick = YF(ticker)
-    print(tick.get_stock_summary_data())
+    print(tick.get_summary_data())
     print(mark)
     print(tick.get_stock_quote_type_data())
     print(mark)
