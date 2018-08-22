@@ -2,18 +2,16 @@
 yahoofinancials
 ===============
 
+A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, etf, and US Treasury financial data from Yahoo Finance.
+
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
-
-Welcome to Yahoo Financials!
 
 Current Version: v1.0
 
 Version Released: 08/22/2018
 
-New Contributers Welcomed!
-
-Email sandersconnor1@gmail.com with YAHOOFINANCIALS-{Your-Name} as email title if interested.
+Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
 Overview
 --------
@@ -86,14 +84,12 @@ Featured Methods
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 4. get_summary_data(reformat=True)
 
-   - New in v0.10.
    - Returns financial summary data for cryptocurrencies, stocks, currencies, ETFs, mutual funds, U.S. Treasuries, commodity futures, and indexes.
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 5. get_stock_quote_type_data()
 
 6. get_historical_price_data(start_date, end_date, time_interval)
 
-   - New in v0.9.
    - This method will pull historical pricing data for stocks, currencies, ETFs, mutual funds, U.S. Treasuries, cryptocurrencies, commodities, and indexes.
    - start_date should be entered in the 'YYYY-MM-DD' format and is the first day that data will be pulled for.
    - end_date should be entered in the 'YYYY-MM-DD' format and is the last day that data will be pulled for.
