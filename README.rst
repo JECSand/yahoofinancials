@@ -28,24 +28,24 @@ Installation
 
 - Linux/Mac:
 
-.. code:: bash
+.. code-block:: bash
     $ pip install yahoofinancials
 
 - Windows (If python doesn't work for you in cmd, try running the following command with just py):
 
-.. code:: bash
+.. code-block:: bash
     > python -m pip install yahoofinancials
 
 2. Installation using github (Mac/Linux):
 
-.. code:: bash
+.. code-block:: bash
     $ git clone https://github.com/JECSand/yahoofinancials.git
     $ cd yahoofinancials
     $ python setup.py install
 
 3. Demo using the included demo script:
 
-.. code:: bash
+.. code-block:: bash
     $ cd yahoofinancials
     $ python demo.py -h
     $ python demo.py
@@ -53,7 +53,7 @@ Installation
 
 4. Test using the included unit testing script:
 
-.. code:: bash
+.. code-block:: bash
     $ cd yahoofinancials
     $ python test/test_yahoofinancials.py
 
@@ -153,7 +153,7 @@ Usage Examples
 Single Ticker Example
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code-block:: python
     from yahoofinancials import YahooFinancials
 
     ticker = 'AAPL'
@@ -169,7 +169,7 @@ Single Ticker Example
 Lists of Tickers Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code-block:: python
     from yahoofinancials import YahooFinancials
 
     tech_stocks = ['AAPL', 'MSFT', 'INTC']
@@ -205,11 +205,11 @@ Examples of Returned JSON Data
 
 1. Annual Income Statement Data for Apple:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'income'))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "incomeStatementHistory": {
             "AAPL": [
@@ -245,11 +245,11 @@ Examples of Returned JSON Data
 
 2. Annual Balance Sheet Data for Apple:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'balance'))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "balanceSheetHistory": {
             "AAPL": [
@@ -288,11 +288,11 @@ Examples of Returned JSON Data
 
 3. Quarterly Cash Flow Statement Data for Citigroup:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('C')
     print(yahoo_financials.get_financial_stmts('quarterly', 'cash'))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "cashflowStatementHistoryQuarterly": {
             "C": [
@@ -323,11 +323,11 @@ Examples of Returned JSON Data
 
 4. Monthly Historical Stock Price Data for Wells Fargo:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('WFC')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "WFC": {
             "currency": "USD",
@@ -365,11 +365,11 @@ Examples of Returned JSON Data
 
 5. Monthly Historical Price Data for EURUSD:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('EURUSD=X')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "EURUSD=X": {
             "currency": "USD",
@@ -399,11 +399,11 @@ Examples of Returned JSON Data
 
 6. Monthly Historical Price Data for BTC-USD:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "BTC-USD": {
             "currency": "USD",
@@ -433,11 +433,11 @@ Examples of Returned JSON Data
 
 7. Weekly Historical Price Data for Crude Oil Futures:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('CL=F')
     print(yahoo_financials.get_historical_price_data("2018-08-01", "2018-08-10", "weekly"))
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "CL=F": {
             "currency": "USD",
@@ -477,11 +477,11 @@ Examples of Returned JSON Data
 
 8. Apple Stock Quote Data:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_stock_quote_type_data())
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "AAPL": {
             "underlyingExchangeSymbol": null,
@@ -503,11 +503,11 @@ Examples of Returned JSON Data
 
 9. U.S. Treasury Current Pricing Data:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials(['^TNX', '^IRX', '^TYX'])
     print(yahoo_financials.get_current_price())
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "^IRX": 2.033,
         "^TNX": 2.895,
@@ -516,11 +516,11 @@ Examples of Returned JSON Data
 
 10. BTC-USD Summary Data:
 
-.. code:: python
+.. code-block:: python
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_summary_data())
 
-.. code:: javascript
+.. code-block:: javascript
     {
         "BTC-USD": {
             "algorithm": "SHA256",
