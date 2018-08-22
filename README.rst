@@ -26,26 +26,30 @@ Installation
 
 1. Installation using pip:
 
-Linux/Mac:
+- Linux/Mac:
 
-.. code-block::
+.. code-block:: bash
+
     $ pip install yahoofinancials
 
-Windows (If python doesn't work for you in cmd, try running the following command with just py):
+- Windows (If python doesn't work for you in cmd, try running the following command with just py):
 
 .. code-block::
+
     > python -m pip install yahoofinancials
 
 2. Installation using github (Mac/Linux):
 
-.. code-block::
+.. code-block:: bash
+
     $ git clone https://github.com/JECSand/yahoofinancials.git
     $ cd yahoofinancials
     $ python setup.py install
 
 3. Demo using the included demo script:
 
-.. code-block::
+.. code-block:: bash
+
     $ cd yahoofinancials
     $ python demo.py -h
     $ python demo.py
@@ -53,7 +57,8 @@ Windows (If python doesn't work for you in cmd, try running the following comman
 
 4. Test using the included unit testing script:
 
-.. code-block::
+.. code-block:: bash
+
     $ cd yahoofinancials
     $ python test/test_yahoofinancials.py
 
@@ -154,6 +159,7 @@ Single Ticker Example
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
+
     from yahoofinancials import YahooFinancials
 
     ticker = 'AAPL'
@@ -170,6 +176,7 @@ Lists of Tickers Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
+
     from yahoofinancials import YahooFinancials
 
     tech_stocks = ['AAPL', 'MSFT', 'INTC']
@@ -207,11 +214,13 @@ Examples of Returned JSON Data
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'income'))
 
 Result:
 .. code-block::
+
     {
         "incomeStatementHistory": {
             "AAPL": [
@@ -249,11 +258,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_financial_stmts('annual', 'balance'))
 
 Result:
 .. code-block::
+
     {
         "balanceSheetHistory": {
             "AAPL": [
@@ -294,11 +305,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('C')
     print(yahoo_financials.get_financial_stmts('quarterly', 'cash'))
 
 Result:
 .. code-block::
+
     {
         "cashflowStatementHistoryQuarterly": {
             "C": [
@@ -331,11 +344,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('WFC')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
 .. code-block::
+
     {
         "WFC": {
             "currency": "USD",
@@ -375,11 +390,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('EURUSD=X')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
 .. code-block::
+
     {
         "EURUSD=X": {
             "currency": "USD",
@@ -411,11 +428,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_historical_price_data("2018-07-10", "2018-08-10", "monthly"))
 
 Result:
 .. code-block::
+
     {
         "BTC-USD": {
             "currency": "USD",
@@ -447,11 +466,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('CL=F')
     print(yahoo_financials.get_historical_price_data("2018-08-01", "2018-08-10", "weekly"))
 
 Result:
 .. code-block::
+
     {
         "CL=F": {
             "currency": "USD",
@@ -493,11 +514,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('AAPL')
     print(yahoo_financials.get_stock_quote_type_data())
 
 Result:
 .. code-block::
+
     {
         "AAPL": {
             "underlyingExchangeSymbol": null,
@@ -521,11 +544,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials(['^TNX', '^IRX', '^TYX'])
     print(yahoo_financials.get_current_price())
 
 Result:
 .. code-block::
+
     {
         "^IRX": 2.033,
         "^TNX": 2.895,
@@ -536,11 +561,13 @@ Result:
 
 Code:
 .. code-block:: python
+
     yahoo_financials = YahooFinancials('BTC-USD')
     print(yahoo_financials.get_summary_data())
 
 Result:
 .. code-block::
+
     {
         "BTC-USD": {
             "algorithm": "SHA256",
