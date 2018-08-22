@@ -9,7 +9,6 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
-    - "3.7"
 
 install:
     - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip --quiet install argparse unittest2; fi
