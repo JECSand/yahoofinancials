@@ -17,3 +17,4 @@
 1.0   08/22/2018 -- Removed the get_stock_summary_data() method.
 1.0   08/22/2018 -- Removed the requests dependency and replaced it with urllib.
 1.0   08/22/2018 -- Updated README.md to README.rst
+1.1   08/23/2018 -- Fixed net income python 3 error

@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.0
+Version: 1.1
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/22/2018
+Version Released: 8/23/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -585,7 +585,7 @@ class YahooFinancials(YahooFinanceETL):
         if isinstance(self.ticker, str):
             try:
                 date_key = re_data[self.ticker][0].keys()[0]
-            except (IndexError, AttributeError):
+            except (IndexError, AttributeError, TypeError):
                 date_key = list(re_data[self.ticker][0])[0]
             data = re_data[self.ticker][0][date_key][field_name]
         else:
