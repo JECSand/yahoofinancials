@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.1
+Version: 1.2
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/23/2018
+Version Released: 8/29/2018
 Tested on Python 2.7 and 3.5
 
 Copyright (c) 2018 Connor Sanders
@@ -264,17 +264,17 @@ class YahooFinanceETL(object):
                         for date_key, date_obj in type_obj.items():
                             formatted_date_key = self.format_date(int(date_key))
                             cleaned_date = self.format_date(int(date_obj['date']))
-                            date_obj.update({u'' + 'formatted_date': cleaned_date})
+                            date_obj.update({'formatted_date': cleaned_date})
                             formatted_type_obj.update({formatted_date_key: date_obj})
                         event_obj.update({type_key: formatted_type_obj})
                     dict_ent = {k: event_obj}
             elif 'date' in k.lower():
                 cleaned_date = self.format_date(v)
-                dict_ent = {k: {u'' + 'formatted_date': cleaned_date, 'date': v}}
+                dict_ent = {k: {'formatted_date': cleaned_date, 'date': v}}
             elif isinstance(v, list):
                 sub_dict_list = []
                 for sub_dict in v:
-                    sub_dict[u'' + 'formatted_date'] = self.format_date(sub_dict['date'])
+                    sub_dict['formatted_date'] = self.format_date(sub_dict['date'])
                     sub_dict_list.append(sub_dict)
                 dict_ent = {k: sub_dict_list}
             else:
@@ -288,7 +288,7 @@ class YahooFinanceETL(object):
         base_url = "https://query1.finance.yahoo.com/v8/finance/chart/"
         api_url = base_url + up_ticker + '?symbol= ' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' +\
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
-        api_url += '&events=div|split|earn'
+        api_url += '&events=div|split|earn&lang=en-US&region=US'
         return api_url
 
     # Private Static Method to get financial data via API Call
@@ -546,8 +546,7 @@ class YahooFinancials(YahooFinanceETL):
         start = self.format_date(start_date)
         end = self.format_date(end_date)
         hist_obj = {'start': start, 'end': end, 'interval': interval_code}
-        data = self.get_stock_data('history', hist_obj=hist_obj)
-        return data
+        return self.get_stock_data('history', hist_obj=hist_obj)
 
     # Private Method for Functions needing stock_price_data
     def _stock_price_data(self, data_field):
