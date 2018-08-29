@@ -289,6 +289,7 @@ class YahooFinanceETL(object):
         api_url = base_url + up_ticker + '?symbol= ' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' +\
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         api_url += '&events=div|split|earn&lang=en-US&region=US'
+        print(api_url)
         return api_url
 
     # Private Static Method to get financial data via API Call
