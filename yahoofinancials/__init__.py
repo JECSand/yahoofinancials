@@ -49,7 +49,6 @@ from json import loads
 import time
 from bs4 import BeautifulSoup
 import datetime
-from datetime import date
 import pytz
 try:
     from urllib import FancyURLopener
@@ -106,15 +105,10 @@ class YahooFinanceETL(object):
     # Public static method to format date serial string to readable format and vice versa
     @staticmethod
     def format_date(in_date):
-        print(in_date)
         if isinstance(in_date, str):
-            year, month, day = in_date.split()[0].split('-')
-            d = date(int(year), int(month), int(day))
-            #form_date = int(time.mktime(d.timetuple()))
             form_date = int(calendar.timegm(time.strptime(in_date, '%Y-%m-%d')))
         else:
             form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
-        print(form_date)
         return form_date
 
     # Private Static Method to Convert Eastern Time to UTC
@@ -293,7 +287,6 @@ class YahooFinanceETL(object):
         api_url = base_url + up_ticker + '?symbol= ' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' +\
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         api_url += '&events=div|split|earn&lang=en-US&region=US'
-        print(api_url)
         return api_url
 
     # Private Static Method to get financial data via API Call
