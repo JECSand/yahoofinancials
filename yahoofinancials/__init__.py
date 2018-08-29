@@ -43,6 +43,7 @@ historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '20
 """
 
 import sys
+import calendar
 import re
 from json import loads
 import time
@@ -109,10 +110,11 @@ class YahooFinanceETL(object):
         if isinstance(in_date, str):
             year, month, day = in_date.split()[0].split('-')
             d = date(int(year), int(month), int(day))
-            form_date = int(time.mktime(d.timetuple()))
+            #form_date = int(time.mktime(d.timetuple()))
+            form_date = int(calendar.timegm(time.strptime(in_date, '%Y-%m-%d')))
         else:
             form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
-        print(in_date)
+        print(form_date)
         return form_date
 
     # Private Static Method to Convert Eastern Time to UTC
@@ -292,7 +294,7 @@ class YahooFinanceETL(object):
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         api_url += '&events=div|split|earn&lang=en-US&region=US'
         print(api_url)
-        return "https://query1.finance.yahoo.com/v8/finance/chart/C?symbol= C&period1=1421301600&period2=1508043600&interval=1wk&events=div|split|earn&lang=en-US&region=US"
+        return api_url
 
     # Private Static Method to get financial data via API Call
     @staticmethod
