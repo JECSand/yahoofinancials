@@ -544,6 +544,8 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for user to get historical price data with
     def get_historical_price_data(self, start_date, end_date, time_interval):
         interval_code = self.get_time_code(time_interval)
+        print(end_date)
+        print(start_date)
         start = self.format_date(start_date)
         end = self.format_date(end_date)
         hist_obj = {'start': start, 'end': end, 'interval': interval_code}
