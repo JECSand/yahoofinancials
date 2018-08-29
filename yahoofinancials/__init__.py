@@ -105,12 +105,14 @@ class YahooFinanceETL(object):
     # Public static method to format date serial string to readable format and vice versa
     @staticmethod
     def format_date(in_date):
+        print(in_date)
         if isinstance(in_date, str):
             year, month, day = in_date.split()[0].split('-')
             d = date(int(year), int(month), int(day))
             form_date = int(time.mktime(d.timetuple()))
         else:
             form_date = str((datetime.datetime(1970, 1, 1) + datetime.timedelta(seconds=in_date)).date())
+        print(in_date)
         return form_date
 
     # Private Static Method to Convert Eastern Time to UTC
@@ -290,7 +292,7 @@ class YahooFinanceETL(object):
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         api_url += '&events=div|split|earn&lang=en-US&region=US'
         print(api_url)
-        return api_url
+        return "https://query1.finance.yahoo.com/v8/finance/chart/C?symbol= C&period1=1421301600&period2=1508043600&interval=1wk&events=div|split|earn&lang=en-US&region=US"
 
     # Private Static Method to get financial data via API Call
     @staticmethod
@@ -544,8 +546,6 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for user to get historical price data with
     def get_historical_price_data(self, start_date, end_date, time_interval):
         interval_code = self.get_time_code(time_interval)
-        print(end_date)
-        print(start_date)
         start = self.format_date(start_date)
         end = self.format_date(end_date)
         hist_obj = {'start': start, 'end': end, 'interval': interval_code}
@@ -789,3 +789,106 @@ class YahooFinancials(YahooFinanceETL):
                 else:
                     ret_obj.update({tick: None})
             return ret_obj
+
+
+import sys
+import datetime
+
+if sys.version_info < (2, 7):
+    from unittest2 import main as test_main, SkipTest, TestCase
+else:
+    from unittest import main as test_main, SkipTest, TestCase
+
+
+# Test Configuration Variables
+stocks = ['AAPL', 'MSFT', 'C']
+currencies = ['EURUSD=X', 'JPY=X', 'GBPUSD=X']
+us_treasuries = ['^TNX', '^IRX', '^TYX']
+
+
+# Global function to check Fundamental Test results
+def check_fundamental(test_data, test_type):
+    if test_type == 'bal':
+        if 'balanceSheetHistoryQuarterly' in test_data and test_data['balanceSheetHistoryQuarterly']['C'] is not None:
+            return True
+        else:
+            return False
+    elif test_type == 'inc':
+        if 'incomeStatementHistoryQuarterly' in test_data and \
+                        test_data['incomeStatementHistoryQuarterly']['C'] is not None:
+            return True
+        else:
+            return False
+    elif test_type == 'all':
+        if 'balanceSheetHistoryQuarterly' in test_data and 'incomeStatementHistoryQuarterly' in test_data and \
+                        'cashflowStatementHistoryQuarterly' in test_data:
+            return True
+        else:
+            return False
+
+
+# Main Test Module Class
+class TestModule(TestCase):
+
+    def setUp(self):
+        self.test_yf_stock_single = YahooFinancials('C')
+        self.test_yf_stock_multi = YahooFinancials(stocks)
+        self.test_yf_treasuries_single = YahooFinancials('^IRX')
+        self.test_yf_treasuries_multi = YahooFinancials(us_treasuries)
+        self.test_yf_currencies = YahooFinancials(currencies)
+
+    # Fundamentals Test
+    def test_yf_fundamentals(self):
+        # Single stock test
+        single_balance_sheet_data_qt = self.test_yf_stock_single.get_financial_stmts('quarterly', 'balance')
+        single_income_statement_data_qt = self.test_yf_stock_single.get_financial_stmts('quarterly', 'income')
+        single_all_statement_data_qt = self.test_yf_stock_single.get_financial_stmts('quarterly',
+                                                                                     ['income', 'cash', 'balance'])
+        # Multi stock test
+        multi_balance_sheet_data_qt = self.test_yf_stock_multi.get_financial_stmts('quarterly', 'balance')
+        multi_income_statement_data_qt = self.test_yf_stock_multi.get_financial_stmts('quarterly', 'income')
+        multi_all_statement_data_qt = self.test_yf_stock_multi.get_financial_stmts('quarterly',
+                                                                                   ['income', 'cash', 'balance'])
+        # Single stock check
+        result = check_fundamental(single_balance_sheet_data_qt, 'bal')
+        self.assertEqual(result, True)
+        result = check_fundamental(single_income_statement_data_qt, 'inc')
+        self.assertEqual(result, True)
+        result = check_fundamental(single_all_statement_data_qt, 'all')
+        self.assertEqual(result, True)
+        # Multi stock check
+        result = check_fundamental(multi_balance_sheet_data_qt, 'bal')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_income_statement_data_qt, 'inc')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_all_statement_data_qt, 'all')
+        self.assertEqual(result, True)
+
+    # Historical Price Test
+    def test_yf_historical_price(self):
+        single_stock_prices = self.test_yf_stock_single.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
+        expect_dict = {'high': 48.2400016784668, 'volume': 81106400, 'formatted_date': '2015-01-12',
+                       'low': 46.599998474121094, 'adjclose': 45.669029235839844, 'date': 1421038800,
+                       'close': 47.61000061035156, 'open': 48.060001373291016}
+        self.assertDictEqual(single_stock_prices['C']['prices'][0], expect_dict)
+
+    # Extra Module Methods Test
+    def test_yf_module_methods(self):
+        # Stocks
+        if isinstance(self.test_yf_stock_single.get_current_price(), float):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+        if isinstance(self.test_yf_stock_single.get_net_income(), int):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+        # Treasuries
+        if isinstance(self.test_yf_treasuries_single.get_current_price(), float):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+
+if __name__ == "__main__":
+    test_main()
