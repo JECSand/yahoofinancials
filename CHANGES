@@ -18,3 +18,5 @@
 1.0   08/22/2018 -- Removed the requests dependency and replaced it with urllib.
 1.0   08/22/2018 -- Updated README.md to README.rst
 1.1   08/23/2018 -- Fixed net income python 3 error
+1.2   08/29/2018 -- Fixed timezone error in python testing. Issue #11.
+1.2   08/29/2018 -- Fixed unicode formatted_date string for consistency.

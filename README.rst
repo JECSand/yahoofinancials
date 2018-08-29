@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
 
-Current Version: v1.1
+Current Version: v1.2
 
-Version Released: 08/23/2018
+Version Released: 08/29/2018
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 

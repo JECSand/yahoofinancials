@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.0
-# Version Released: 08/22/2018
+# YahooFinancials Unit Tests v1.2
+# Version Released: 08/29/2018
 # Author: Connor Sanders
 # Tested on Python 2.7 and 3.5
 # Copyright (c) 2018 Connor Sanders
@@ -82,14 +82,9 @@ class TestModule(TestCase):
     # Historical Price Test
     def test_yf_historical_price(self):
         single_stock_prices = self.test_yf_stock_single.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
-        if sys.version_info < (3, 0):
-            expect_dict = {'high': 49.099998474121094, 'volume': 125737200, u'formatted_date': '2015-01-12',
-                           'low': 46.599998474121094, 'adjclose': 45.669029235839844, 'date': 1421038800,
-                           'close': 47.61000061035156, 'open': 48.959999084472656}
-        else:
-            expect_dict = {'high': 49.099998474121094, 'volume': 125737200, 'formatted_date': '2015-01-12',
-                           'low': 46.599998474121094, 'adjclose': 45.669029235839844, 'date': 1421038800,
-                           'close': 47.61000061035156, 'open': 48.959999084472656}
+        expect_dict = {'high': 48.2400016784668, 'volume': 81106400, 'formatted_date': '2015-01-12',
+                       'low': 46.599998474121094, 'adjclose': 45.669029235839844, 'date': 1421038800,
+                       'close': 47.61000061035156, 'open': 48.060001373291016}
         self.assertDictEqual(single_stock_prices['C']['prices'][0], expect_dict)
 
     # Extra Module Methods Test
