@@ -1,7 +1,7 @@
-# YahooFinancials Unit Tests v1.2
-# Version Released: 08/29/2018
+# YahooFinancials Unit Tests v1.3
+# Version Released: 10/25/2018
 # Author: Connor Sanders
-# Tested on Python 2.7 and 3.5
+# Tested on Python 2.7, 3.3, 3.4, 3.5, and 3.6
 # Copyright (c) 2018 Connor Sanders
 # MIT License
 
@@ -71,6 +71,7 @@ class TestModule(TestCase):
         self.assertEqual(result, True)
         result = check_fundamental(single_all_statement_data_qt, 'all')
         self.assertEqual(result, True)
+
         # Multi stock check
         result = check_fundamental(multi_balance_sheet_data_qt, 'bal')
         self.assertEqual(result, True)
