@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
 
-Current Version: v1.2
+Current Version: v1.3
 
-Version Released: 08/29/2018
+Version Released: 10/25/2018
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -21,8 +21,8 @@ A powerful financial data module used for pulling both fundamental and technical
 
 Installation
 ------------
-- yahoofinancials runs fine on most versions of python 2 and 3.
-- It was built and tested using versions 2.7 and 3.5
+- yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, and 3.6.
+- Python 3.7 support is coming soon.
 - The package depends on beautifulsoup4 and pytz to work.
 
 1. Installation using pip:
@@ -67,7 +67,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works on most versions of python 2 and 3 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 2.7, 3.3, 3.4, 3.5, and 3.6 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^

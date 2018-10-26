@@ -1,13 +1,13 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.2
+Version: 1.3
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 8/29/2018
-Tested on Python 2.7 and 3.5
+Version Released: 10/25/2018
+Tested on Python 2.7, 3.3, 3.4, 3.5, and 3.6
 
 Copyright (c) 2018 Connor Sanders
 MIT License
@@ -249,7 +249,7 @@ class YahooFinanceETL(object):
         return url
 
     # Private Method to clean the dates of the newly returns historical stock data into readable format
-    def _clean_historical_data(self, hist_data):
+    def _clean_historical_data(self, hist_data, last_attempt=False):
         data = {}
         for k, v in hist_data.items():
             if k == 'eventsData':
@@ -267,8 +267,14 @@ class YahooFinanceETL(object):
                         event_obj.update({type_key: formatted_type_obj})
                     dict_ent = {k: event_obj}
             elif 'date' in k.lower():
-                cleaned_date = self.format_date(v)
-                dict_ent = {k: {'formatted_date': cleaned_date, 'date': v}}
+                if v is not None:
+                    cleaned_date = self.format_date(v)
+                    dict_ent = {k: {'formatted_date': cleaned_date, 'date': v}}
+                else:
+                    if last_attempt is False:
+                        return None
+                    else:
+                        dict_ent = {k: {'formatted_date': None, 'date': v}}
             elif isinstance(v, list):
                 sub_dict_list = []
                 for sub_dict in v:
@@ -339,6 +345,20 @@ class YahooFinanceETL(object):
             ret_obj.update({'prices': prices_list})
         return ret_obj
 
+    # Private Method to Handle Recursive API Request
+    def _recursive_api_request(self, hist_obj, up_ticker, i=0):
+        api_url = self._build_api_url(hist_obj, up_ticker)
+        re_data = self._clean_api_data(api_url)
+        cleaned_re_data = self._clean_historical_data(re_data)
+        if cleaned_re_data is not None:
+            return cleaned_re_data
+        else:
+            if i < 3:
+                i += 1
+                return self._recursive_api_request(hist_obj, up_ticker, i)
+            else:
+                return self._clean_historical_data(re_data, True)
+
     # Private Method to take scrapped data and build a data dictionary with
     def _create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
         YAHOO_URL = self._BASE_YAHOO_URL + up_ticker + '/' + self.YAHOO_FINANCIAL_TYPES[statement_type][0] + '?p=' +\
@@ -359,9 +379,12 @@ class YahooFinanceETL(object):
         else:
             YAHOO_URL = self._build_historical_url(up_ticker, hist_obj)
             try:
+                cleaned_re_data = self._recursive_api_request(hist_obj, up_ticker)
+                '''
                 api_url = self._build_api_url(hist_obj, up_ticker)
                 re_data = self._clean_api_data(api_url)
                 cleaned_re_data = self._clean_historical_data(re_data)
+                '''
             except KeyError:
                 try:
                     re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
