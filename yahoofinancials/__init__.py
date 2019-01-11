@@ -50,6 +50,7 @@ import time
 from bs4 import BeautifulSoup
 import datetime
 import pytz
+import random
 try:
     from urllib import FancyURLopener
 except:
@@ -59,6 +60,9 @@ except:
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
 
+#Custom Exception class to handle custom error
+class ManagedException(Exception):
+    pass
 
 # Class used to open urls for financial data
 class UrlOpener(FancyURLopener):
@@ -132,6 +136,20 @@ class YahooFinanceETL(object):
             _lastget = now
             urlopener = UrlOpener()
             response = urlopener.open(url)
+            #Try to open the URL up to 10 times sleeping random time if something goes wrong
+            maxRetry = 10
+            for i in range(0,maxRetry):
+                response = urlopener.open(url)
+                if response.getcode() != 200:
+                    #Sleep a random time between 10 to 20 seconds
+                    time.sleep(random.randrange(10,20))
+                else:
+                    #break the loop if HTTP status equals 200
+                    break
+                if (i == maxRetry-1):
+                    #raise a custom exception if we can't get the web page within maxRetry attempts
+                    raise ManagedException("Server replied with HTTP "+str(response.getcode())+" code while opening the url: "+str(url))
+
             response_content = response.read()
             soup = BeautifulSoup(response_content, "html.parser")
             script = soup.find("script", text=re.compile("root.App.main")).text
@@ -448,8 +466,13 @@ class YahooFinanceETL(object):
             data.update(dict_ent)
         else:
             for tick in self.ticker:
-                dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
-                data.update(dict_ent)
+                try:
+                    dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
+                    data.update(dict_ent)
+                except ManagedException:
+                    print("Warning! Ticker: "+str(tick)+" error - "+ManagedException)
+                    print("The process is still running...")
+                    continue
         return data
 
     # Public Method to get technical stock data
