@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
 
-Current Version: v1.3
+Current Version: v1.4
 
-Version Released: 10/25/2018
+Version Released: 01/12/2019
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -518,7 +518,7 @@ Examples of Returned JSON Data
     print(yahoo_financials.get_stock_quote_type_data())
 
 
-.. code-block:: javascripts
+.. code-block:: javascript
 
     {
         "AAPL": {
