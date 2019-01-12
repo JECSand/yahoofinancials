@@ -1,15 +1,15 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.3
+Version: 1.4
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 10/25/2018
+Version Released: 01/12/2018
 Tested on Python 2.7, 3.3, 3.4, 3.5, and 3.6
 
-Copyright (c) 2018 Connor Sanders
+Copyright (c) 2019 Connor Sanders
 MIT License
 
 List of Included Functions:
@@ -60,9 +60,11 @@ except:
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
 
-#Custom Exception class to handle custom error
+
+# Custom Exception class to handle custom error
 class ManagedException(Exception):
     pass
+
 
 # Class used to open urls for financial data
 class UrlOpener(FancyURLopener):
@@ -136,20 +138,20 @@ class YahooFinanceETL(object):
             _lastget = now
             urlopener = UrlOpener()
             response = urlopener.open(url)
-            #Try to open the URL up to 10 times sleeping random time if something goes wrong
-            maxRetry = 10
-            for i in range(0,maxRetry):
+            # Try to open the URL up to 10 times sleeping random time if something goes wrong
+            max_retry = 10
+            for i in range(0, max_retry):
                 response = urlopener.open(url)
                 if response.getcode() != 200:
-                    #Sleep a random time between 10 to 20 seconds
-                    time.sleep(random.randrange(10,20))
+                    # Sleep a random time between 10 to 20 seconds
+                    time.sleep(random.randrange(10, 20))
                 else:
-                    #break the loop if HTTP status equals 200
+                    # Break the loop if HTTP status equals 200
                     break
-                if (i == maxRetry-1):
-                    #raise a custom exception if we can't get the web page within maxRetry attempts
-                    raise ManagedException("Server replied with HTTP "+str(response.getcode())+" code while opening the url: "+str(url))
-
+                if i == max_retry - 1:
+                    # Raise a custom exception if we can't get the web page within maxRetry attempts
+                    raise ManagedException("Server replied with HTTP " + str(response.getcode()) +
+                                           " code while opening the url: " + str(url))
             response_content = response.read()
             soup = BeautifulSoup(response_content, "html.parser")
             script = soup.find("script", text=re.compile("root.App.main")).text
@@ -398,11 +400,6 @@ class YahooFinanceETL(object):
             YAHOO_URL = self._build_historical_url(up_ticker, hist_obj)
             try:
                 cleaned_re_data = self._recursive_api_request(hist_obj, up_ticker)
-                '''
-                api_url = self._build_api_url(hist_obj, up_ticker)
-                re_data = self._clean_api_data(api_url)
-                cleaned_re_data = self._clean_historical_data(re_data)
-                '''
             except KeyError:
                 try:
                     re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
@@ -470,7 +467,7 @@ class YahooFinanceETL(object):
                     dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
                     data.update(dict_ent)
                 except ManagedException:
-                    print("Warning! Ticker: "+str(tick)+" error - "+ManagedException)
+                    print("Warning! Ticker: " + str(tick) + " error - " + ManagedException)
                     print("The process is still running...")
                     continue
         return data
