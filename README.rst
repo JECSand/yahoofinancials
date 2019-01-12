@@ -169,7 +169,7 @@ Single Ticker Example
     all_statement_data_qt =  yahoo_financials.get_financial_stmts('quarterly', ['income', 'cash', 'balance'])
     apple_earnings_data = yahoo_financials.get_stock_earnings_data()
     apple_net_income = yahoo_financials.get_net_income()
-    historical_stock_prices = yahoo_financials.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
+    historical_stock_prices = yahoo_financials.get_historical_price_data('2008-09-15', '2018-09-15', 'weekly')
 
 Lists of Tickers Example
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -199,12 +199,12 @@ Lists of Tickers Example
 
     banks_net_ebit = yahoo_financials_banks.get_ebit()
     tech_stock_price_data = yahoo_financials_tech.get_stock_price_data()
-    daily_bank_stock_prices = yahoo_financials_banks.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
-    daily_commodity_prices = yahoo_financials_commodities.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
-    daily_crypto_prices = yahoo_financials_cryptocurrencies.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
-    daily_currency_prices = yahoo_financials_currencies.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
-    daily_mutualfund_prices = yahoo_financials_mutualfunds.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
-    daily_treasury_prices = yahoo_financials_treasuries.get_historical_price_data('2008-09-15', '2017-09-15', 'daily')
+    daily_bank_stock_prices = yahoo_financials_banks.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
+    daily_commodity_prices = yahoo_financials_commodities.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
+    daily_crypto_prices = yahoo_financials_cryptocurrencies.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
+    daily_currency_prices = yahoo_financials_currencies.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
+    daily_mutualfund_prices = yahoo_financials_mutualfunds.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
+    daily_treasury_prices = yahoo_financials_treasuries.get_historical_price_data('2008-09-15', '2018-09-15', 'daily')
 
 Examples of Returned JSON Data
 ------------------------------

@@ -137,26 +137,27 @@ class YahooFinanceETL(object):
                 now = int(time.time())
             _lastget = now
             urlopener = UrlOpener()
-            response = urlopener.open(url)
             # Try to open the URL up to 10 times sleeping random time if something goes wrong
             max_retry = 10
             for i in range(0, max_retry):
                 response = urlopener.open(url)
                 if response.getcode() != 200:
-                    # Sleep a random time between 10 to 20 seconds
                     time.sleep(random.randrange(10, 20))
                 else:
-                    # Break the loop if HTTP status equals 200
-                    break
+                    response_content = response.read()
+                    soup = BeautifulSoup(response_content, "html.parser")
+                    re_script = soup.find("script", text=re.compile("root.App.main"))
+                    if re_script is not None:
+                        script = re_script.text
+                        self._cache[url] = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
+                        response.close()
+                        break
+                    else:
+                        time.sleep(random.randrange(10, 20))
                 if i == max_retry - 1:
-                    # Raise a custom exception if we can't get the web page within maxRetry attempts
+                    # Raise a custom exception if we can't get the web page within max_retry attempts
                     raise ManagedException("Server replied with HTTP " + str(response.getcode()) +
                                            " code while opening the url: " + str(url))
-            response_content = response.read()
-            soup = BeautifulSoup(response_content, "html.parser")
-            script = soup.find("script", text=re.compile("root.App.main")).text
-            self._cache[url] = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
-            response.close()
         data = self._cache[url]
         if tech_type == '' and statement_type != 'history':
             stores = data["context"]["dispatcher"]["stores"]["QuoteSummaryStore"]
@@ -310,27 +311,36 @@ class YahooFinanceETL(object):
     @staticmethod
     def _build_api_url(hist_obj, up_ticker):
         base_url = "https://query1.finance.yahoo.com/v8/finance/chart/"
-        api_url = base_url + up_ticker + '?symbol= ' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' +\
+        api_url = base_url + up_ticker + '?symbol=' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' + \
                   str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         api_url += '&events=div|split|earn&lang=en-US&region=US'
         return api_url
 
-    # Private Static Method to get financial data via API Call
-    @staticmethod
-    def _get_api_data(api_url):
+    # Private Method to get financial data via API Call
+    def _get_api_data(self, api_url, tries=0):
         urlopener = UrlOpener()
         response = urlopener.open(api_url)
-        res_content = response.read()
-        response.close()
-        if sys.version_info < (3, 0):
-            return loads(res_content)
-        return loads(res_content.decode('utf-8'))
+        if response.getcode() == 200:
+            res_content = response.read()
+            response.close()
+            if sys.version_info < (3, 0):
+                return loads(res_content)
+            return loads(res_content.decode('utf-8'))
+        else:
+            if tries < 5:
+                time.sleep(random.randrange(10, 20))
+                tries += 1
+                return self._get_api_data(api_url, tries)
+            else:
+                return None
 
     # Private Method to clean API data
     def _clean_api_data(self, api_url):
         raw_data = self._get_api_data(api_url)
         ret_obj = {}
         ret_obj.update({'eventsData': []})
+        if raw_data is None:
+            return ret_obj
         results = raw_data['chart']['result']
         if results is None:
             return ret_obj
@@ -467,7 +477,7 @@ class YahooFinanceETL(object):
                     dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
                     data.update(dict_ent)
                 except ManagedException:
-                    print("Warning! Ticker: " + str(tick) + " error - " + ManagedException)
+                    print("Warning! Ticker: " + str(tick) + " error - " + str(ManagedException))
                     print("The process is still running...")
                     continue
         return data
