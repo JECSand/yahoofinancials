@@ -4,11 +4,14 @@ python:
     - "2.7"
     - "pypy"
     - "pypy3"
-    - "3.3"
     - "3.4"
     - "3.5"
     - "3.6"
-    - "3.7"
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
 
 install:
     - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip --quiet install argparse unittest2; fi
