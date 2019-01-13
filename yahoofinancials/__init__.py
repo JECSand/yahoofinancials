@@ -6,8 +6,8 @@ Version: 1.4
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 01/12/2018
-Tested on Python 2.7, 3.3, 3.4, 3.5, and 3.6
+Version Released: 01/13/2019
+Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
 
 Copyright (c) 2019 Connor Sanders
 MIT License
@@ -86,6 +86,7 @@ class YahooFinanceETL(object):
         'income': ['financials', 'incomeStatementHistory', 'incomeStatementHistoryQuarterly'],
         'balance': ['balance-sheet', 'balanceSheetHistory', 'balanceSheetHistoryQuarterly', 'balanceSheetStatements'],
         'cash': ['cash-flow', 'cashflowStatementHistory', 'cashflowStatementHistoryQuarterly', 'cashflowStatements'],
+        'keystats': ['key-statistics'],
         'history': ['history']
     }
 
@@ -484,7 +485,10 @@ class YahooFinanceETL(object):
 
     # Public Method to get technical stock data
     def get_stock_tech_data(self, tech_type):
-        return self.get_stock_data(tech_type=tech_type)
+        if tech_type == 'defaultKeyStatistics':
+            return self.get_stock_data(statement_type='keystats', tech_type=tech_type)
+        else:
+            return self.get_stock_data(tech_type=tech_type)
 
     # Public Method to get reformatted statement data
     def get_reformatted_stmt_data(self, raw_data, statement_type):
@@ -566,6 +570,13 @@ class YahooFinancials(YahooFinanceETL):
             return self.get_clean_data(self.get_stock_tech_data('price'), 'price')
         else:
             return self.get_stock_tech_data('price')
+
+    # Public Method for the user to return key-statistics data
+    def get_key_statistics_data(self, reformat=True):
+        if reformat:
+            return self.get_clean_data(self.get_stock_tech_data('defaultKeyStatistics'), 'defaultKeyStatistics')
+        else:
+            return self.get_stock_tech_data('defaultKeyStatistics')
 
     # Public Method for the user to get stock earnings data
     def get_stock_earnings_data(self, reformat=True):
