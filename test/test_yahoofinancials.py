@@ -1,7 +1,7 @@
 # YahooFinancials Unit Tests v1.4
-# Version Released: 01/12/2019
+# Version Released: 01/13/2019
 # Author: Connor Sanders
-# Tested on Python 2.7, 3.3, 3.4, 3.5, and 3.6
+# Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
 # Copyright (c) 2019 Connor Sanders
 # MIT License
 
@@ -16,7 +16,7 @@ else:
 
 
 # Test Configuration Variables
-stocks = ['AAPL', 'MSFT', 'C']
+stocks = ['AAPL', 'MSFT', 'C', 'IL&FSTRANS.NS']
 currencies = ['EURUSD=X', 'JPY=X', 'GBPUSD=X']
 us_treasuries = ['^TNX', '^IRX', '^TYX']
 

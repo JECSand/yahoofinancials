@@ -9,7 +9,7 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 
 Current Version: v1.4
 
-Version Released: 01/12/2019
+Version Released: 01/13/2019
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -21,8 +21,7 @@ A powerful financial data module used for pulling both fundamental and technical
 
 Installation
 ------------
-- yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, and 3.6.
-- Python 3.7 support is coming soon.
+- yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7.
 - The package depends on beautifulsoup4 and pytz to work.
 
 1. Installation using pip:
@@ -67,7 +66,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works with Python 2.7, 3.3, 3.4, 3.5, and 3.6 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^
@@ -99,10 +98,9 @@ Featured Methods
 
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-Methods Removed in V1.0
+Methods Added in V1.4
 ^^^^^^^^^^^^^^^^^^^^^^^
-- get_stock_summary_data():
-- get_historical_stock_data():
+- get_key_statistics_data():
 
 Additional Module Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -620,5 +618,71 @@ Examples of Returned JSON Data
             "volumeAllCurrencies": 2673437184,
             "yield": null,
             "ytdReturn": null
+        }
+    }
+11. Apple Key Statistics Data:
+
+
+.. code-block:: python
+
+    yahoo_financials = YahooFinancials('AAPL')
+    print(yahoo_financials.get_key_statistics_data())
+
+
+.. code-block:: javascript
+
+    {
+        "AAPL": {
+            "annualHoldingsTurnover": null,
+            "enterpriseToRevenue": 2.973,
+            "beta3Year": null,
+            "profitMargins": 0.22413999,
+            "enterpriseToEbitda": 9.652,
+            "52WeekChange": -0.12707871,
+            "morningStarRiskRating": null,
+            "forwardEps": 13.49,
+            "revenueQuarterlyGrowth": null,
+            "sharesOutstanding": 4729800192,
+            "fundInceptionDate": "-",
+            "annualReportExpenseRatio": null,
+            "totalAssets": null,
+            "bookValue": 22.534,
+            "sharesShort": 44915125,
+            "sharesPercentSharesOut": 0.0095,
+            "fundFamily": null,
+            "lastFiscalYearEnd": 1538179200,
+            "heldPercentInstitutions": 0.61208,
+            "netIncomeToCommon": 59531001856,
+            "trailingEps": 11.91,
+            "lastDividendValue": null,
+            "SandP52WeekChange": -0.06475246,
+            "priceToBook": 6.7582316,
+            "heldPercentInsiders": 0.00072999997,
+            "nextFiscalYearEnd": 1601337600,
+            "yield": null,
+            "mostRecentQuarter": 1538179200,
+            "shortRatio": 1,
+            "sharesShortPreviousMonthDate": "2018-10-31",
+            "floatShares": 4489763410,
+            "beta": 1.127094,
+            "enterpriseValue": 789555511296,
+            "priceHint": 2,
+            "threeYearAverageReturn": null,
+            "lastSplitDate": "2014-06-09",
+            "lastSplitFactor": "1/7",
+            "legalType": null,
+            "morningStarOverallRating": null,
+            "earningsQuarterlyGrowth": 0.318,
+            "priceToSalesTrailing12Months": null,
+            "dateShortInterest": 1543536000,
+            "pegRatio": 0.98,
+            "ytdReturn": null,
+            "forwardPE": 11.289103,
+            "maxAge": 1,
+            "lastCapGain": null,
+            "shortPercentOfFloat": 0.0088,
+            "sharesShortPriorMonth": 36469092,
+            "category": null,
+            "fiveYearAverageReturn": null
         }
     }

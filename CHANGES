@@ -21,3 +21,6 @@
 1.2   08/29/2018 -- Fixed timezone error in python testing. Issue #11.
 1.2   08/29/2018 -- Fixed unicode formatted_date string for consistency.
 1.3   10/25/2018 -- Added patch for reported bug described in Issue #14.
+1.4   01/13/2019 -- Python3.7 support added.
+1.4   01/13/2019 -- Added patch for reported bug described in Issue #15.
+1.4   01/13/2019 -- Added method for get_stock_earnings_data().
