@@ -538,6 +538,40 @@ class YahooFinanceETL(object):
                 cleaned_data_dict.update({tick: cleaned_data})
         return cleaned_data_dict
 
+    # Private method to handle dividend data requests
+    def _handle_api_dividend_request(self, cur_ticker, start, end, interval):
+        re_dividends = []
+        test_url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + cur_ticker + \
+                   '?period1=' + str(start) + '&period2=' + str(end) + '&interval=' + interval + '&events=div'
+        div_dict = self._get_api_data(test_url)['chart']['result'][0]['events']['dividends']
+        for div_time_key, div_obj in div_dict.items():
+            dividend_obj = {
+                'date': div_obj['date'],
+                'formatted_date': self.format_date(int(div_obj['date'])),
+                'amount': div_obj.get('amount', None)
+            }
+            re_dividends.append(dividend_obj)
+        return sorted(re_dividends, key=lambda div: div['date'])
+
+    # Public method to get daily dividend data
+    def get_stock_dividend_data(self, start, end, interval):
+        interval_code = self.get_time_code(interval)
+        if isinstance(self.ticker, str):
+            try:
+                return {self.ticker: self._handle_api_dividend_request(self.ticker, start, end, interval_code)}
+            except:
+                return {self.ticker: None}
+        else:
+            re_data = {}
+            for tick in self.ticker:
+                try:
+                    div_data = self._handle_api_dividend_request(tick, start, end, interval_code)
+                    re_data.update({tick: div_data})
+                except:
+                    re_data.update({tick: None})
+            print(re_data)
+            return re_data
+
 
 # Class containing methods to create stock data extracts
 class YahooFinancials(YahooFinanceETL):
@@ -665,6 +699,12 @@ class YahooFinancials(YahooFinanceETL):
                 else:
                     data.update({tick: None})
         return data
+
+    # Public method to get daily dividend data
+    def get_daily_dividend_data(self, start_date, end_date):
+        start = self.format_date(start_date)
+        end = self.format_date(end_date)
+        return self.get_stock_dividend_data(start, end, 'daily')
 
     # Public Price Data Methods
     def get_current_price(self):
