@@ -88,6 +88,18 @@ class TestModule(TestCase):
                        'close': 47.61000061035156, 'open': 48.959999084472656}
         self.assertDictEqual(single_stock_prices['C']['prices'][0], expect_dict)
 
+    # Historical Stock Daily Dividend Test
+    def test_yf_dividend_price(self):
+        single_stock_dividend = self.test_yf_stock_single.get_daily_dividend_data('1986-09-15', '1987-09-15')
+        expect_dict = {"C": [{"date": 533313000, "formatted_date": "1986-11-25", "amount": 0.02999},
+                             {"date": 541348200, "formatted_date": "1987-02-26", "amount": 0.02999},
+                             {"date": 544714200, "formatted_date": "1987-04-06", "amount": 0.332},
+                             {"date": 549120600, "formatted_date": "1987-05-27", "amount": 0.02999},
+                             {"date": 552576600, "formatted_date": "1987-07-06", "amount": 0.332},
+                             {"date": 557501400, "formatted_date": "1987-09-01", "amount": 0.02999}]
+                       }
+        self.assertDictEqual(single_stock_dividend, expect_dict)
+
     # Extra Module Methods Test
     def test_yf_module_methods(self):
         # Stocks
