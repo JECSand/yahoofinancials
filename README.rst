@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
     :target: https://travis-ci.org/JECSand/yahoofinancials
 
-Current Version: v1.4
+Current Version: v1.5
 
-Version Released: 01/13/2019
+Version Released: 01/27/2019
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -20,7 +20,7 @@ A powerful financial data module used for pulling both fundamental and technical
 - As of Version 0.10, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, ETFs, mutual funds, U.S. Treasuries, currencies, indexes, and stocks.
 
 Installation
-------------
+-------------
 - yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7.
 - The package depends on beautifulsoup4 and pytz to work.
 
@@ -98,53 +98,54 @@ Featured Methods
 
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-Methods Added in V1.4
+Methods Added in V1.5
 ^^^^^^^^^^^^^^^^^^^^^^^
-- get_key_statistics_data():
+- get_daily_dividend_data(start_date, end_date)
 
 Additional Module Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-- get_interest_expense():
-- get_operating_income():
-- get_total_operating_expense():
-- get_total_revenue():
-- get_cost_of_revenue():
-- get_income_before_tax():
-- get_income_tax_expense():
-- get_gross_profit():
-- get_net_income_from_continuing_ops():
-- get_research_and_development():
-- get_current_price():
-- get_current_change():
-- get_current_percent_change():
-- get_current_volume():
-- get_prev_close_price():
-- get_open_price():
-- get_ten_day_avg_daily_volume():
-- get_three_month_avg_daily_volume():
-- get_stock_exchange():
-- get_market_cap():
-- get_daily_low():
-- get_daily_high():
-- get_currency():
-- get_yearly_high():
-- get_yearly_low():
-- get_dividend_yield():
-- get_annual_avg_div_yield():
-- get_five_yr_avg_div_yield():
-- get_dividend_rate():
-- get_annual_avg_div_rate():
-- get_50day_moving_avg():
-- get_200day_moving_avg():
-- get_beta():
-- get_payout_ratio():
-- get_pe_ratio():
-- get_price_to_sales():
-- get_exdividend_date():
-- get_book_value():
-- get_ebit():
-- get_net_income():
-- get_earnings_per_share():
+- get_interest_expense()
+- get_operating_income()
+- get_total_operating_expense()
+- get_total_revenue()
+- get_cost_of_revenue()
+- get_income_before_tax()
+- get_income_tax_expense()
+- get_gross_profit()
+- get_net_income_from_continuing_ops()
+- get_research_and_development()
+- get_current_price()
+- get_current_change()
+- get_current_percent_change()
+- get_current_volume()
+- get_prev_close_price()
+- get_open_price()
+- get_ten_day_avg_daily_volume()
+- get_three_month_avg_daily_volume()
+- get_stock_exchange()
+- get_market_cap()
+- get_daily_low()
+- get_daily_high()
+- get_currency()
+- get_yearly_high()
+- get_yearly_low()
+- get_dividend_yield()
+- get_annual_avg_div_yield()
+- get_five_yr_avg_div_yield()
+- get_dividend_rate()
+- get_annual_avg_div_rate()
+- get_50day_moving_avg()
+- get_200day_moving_avg()
+- get_beta()
+- get_payout_ratio()
+- get_pe_ratio()
+- get_price_to_sales()
+- get_exdividend_date()
+- get_book_value()
+- get_ebit()
+- get_net_income()
+- get_earnings_per_share()
+- get_key_statistics_data()
 
 Usage Examples
 --------------
@@ -620,6 +621,7 @@ Examples of Returned JSON Data
             "ytdReturn": null
         }
     }
+
 11. Apple Key Statistics Data:
 
 
@@ -686,3 +688,64 @@ Examples of Returned JSON Data
             "fiveYearAverageReturn": null
         }
     }
+
+12. Apple and Wells Fargo Daily Dividend Data:
+
+
+.. code-block:: python
+
+    start_date = '1987-09-15'
+    end_date = '1988-09-15'
+    yahoo_financials = YahooFinancials(['AAPL', 'WFC'])
+    print(yahoo_financials.get_daily_dividend_data(start_date, end_date))
+
+
+.. code-block:: javascript
+
+    {
+        "AAPL": [
+            {
+                "date": 564157800,
+                "formatted_date": "1987-11-17",
+                "amount": 0.08
+            },
+            {
+                "date": 571674600,
+                "formatted_date": "1988-02-12",
+                "amount": 0.08
+            },
+            {
+                "date": 579792600,
+                "formatted_date": "1988-05-16",
+                "amount": 0.08
+            },
+            {
+                "date": 587655000,
+                "formatted_date": "1988-08-15",
+                "amount": 0.08
+            }
+        ],
+        "WFC": [
+            {
+                "date": 562861800,
+                "formatted_date": "1987-11-02",
+                "amount": 0.3008
+            },
+            {
+                "date": 570724200,
+                "formatted_date": "1988-02-01",
+                "amount": 0.3008
+            },
+            {
+                "date": 578583000,
+                "formatted_date": "1988-05-02",
+                "amount": 0.3344
+            },
+            {
+                "date": 586445400,
+                "formatted_date": "1988-08-01",
+                "amount": 0.3344
+            }
+        ]
+    }
+

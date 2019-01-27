@@ -25,3 +25,4 @@
 1.4   01/13/2019 -- Added patch for reported bug described in Issue #15.
 1.4   01/13/2019 -- Added method for get_stock_earnings_data().
 1.5   01/27/2019 -- Added get_daily_dividend_data() method as request in Issue #20.
+1.5   01/27/2019 -- Added test_yf_dividend_price() unit testing method.
