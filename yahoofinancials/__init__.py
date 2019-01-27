@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.4
+Version: 1.5
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 01/13/2019
+Version Released: 01/27/2019
 Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
 
 Copyright (c) 2019 Connor Sanders
@@ -569,7 +569,6 @@ class YahooFinanceETL(object):
                     re_data.update({tick: div_data})
                 except:
                     re_data.update({tick: None})
-            print(re_data)
             return re_data
 
 

@@ -1,12 +1,11 @@
-# YahooFinancials Unit Tests v1.4
-# Version Released: 01/13/2019
+# YahooFinancials Unit Tests v1.5
+# Version Released: 01/27/2019
 # Author: Connor Sanders
 # Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
 # Copyright (c) 2019 Connor Sanders
 # MIT License
 
 import sys
-import datetime
 from yahoofinancials import YahooFinancials
 
 if sys.version_info < (2, 7):
