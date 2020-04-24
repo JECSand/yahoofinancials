@@ -83,8 +83,10 @@ class TestModule(TestCase):
     def test_yf_historical_price(self):
         single_stock_prices = self.test_yf_stock_single.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
         expect_dict = {'high': 49.099998474121094, 'volume': 125737200, 'formatted_date': '2015-01-12',
-                       'low': 46.599998474121094, 'adjclose': 45.35684585571289, 'date': 1421038800,
+                       'low': 46.599998474121094, 'date': 1421038800,
                        'close': 47.61000061035156, 'open': 48.959999084472656}
+        # ignore adjclose as it will change with every dividend paid in the future
+        del single_stock_prices['C']['prices'][0]['adjclose']
         self.assertDictEqual(single_stock_prices['C']['prices'][0], expect_dict)
 
     # Historical Stock Daily Dividend Test
