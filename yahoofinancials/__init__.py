@@ -1,15 +1,15 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.5
+Version: 1.6
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 01/27/2019
+Version Released: 10/18/2020
 Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
 
-Copyright (c) 2019 Connor Sanders
+Copyright (c) 2020 Connor Sanders
 MIT License
 
 List of Included Functions:
