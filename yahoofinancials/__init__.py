@@ -87,7 +87,8 @@ class YahooFinanceETL(object):
         'balance': ['balance-sheet', 'balanceSheetHistory', 'balanceSheetHistoryQuarterly', 'balanceSheetStatements'],
         'cash': ['cash-flow', 'cashflowStatementHistory', 'cashflowStatementHistoryQuarterly', 'cashflowStatements'],
         'keystats': ['key-statistics'],
-        'history': ['history']
+        'history': ['history'],
+        'profile': ['profile']
     }
 
     # Interval value translation dictionary
@@ -613,6 +614,14 @@ class YahooFinancials(YahooFinanceETL):
             return self.get_clean_data(self.get_stock_tech_data('defaultKeyStatistics'), 'defaultKeyStatistics')
         else:
             return self.get_stock_tech_data('defaultKeyStatistics')
+
+    # Public Method for the user to get company profile data
+    def get_stock_profile_data(self, reformat=True):
+        if reformat:
+            return self.get_clean_data(self.get_stock_data(statement_type='profile', tech_type='', report_name='assetProfile'), 'earnings')
+        else:
+            return self.get_stock_data(statement_type='profile', tech_type='', report_name='assetProfile')
+
 
     # Public Method for the user to get stock earnings data
     def get_stock_earnings_data(self, reformat=True):
