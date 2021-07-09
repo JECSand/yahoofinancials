@@ -87,7 +87,8 @@ class YahooFinanceETL(object):
         'balance': ['balance-sheet', 'balanceSheetHistory', 'balanceSheetHistoryQuarterly', 'balanceSheetStatements'],
         'cash': ['cash-flow', 'cashflowStatementHistory', 'cashflowStatementHistoryQuarterly', 'cashflowStatements'],
         'keystats': ['key-statistics'],
-        'history': ['history']
+        'history': ['history'],
+        'profile':  ['profile']
     }
 
     # Interval value translation dictionary
