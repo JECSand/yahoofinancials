@@ -18,7 +18,7 @@ A powerful financial data module used for pulling both fundamental and technical
 
 Installation
 -------------
-- yahoofinancials runs on Python 3.5, 3.6, 3.7, 3.8, 3.9, and 3.10.
+- yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, and 3.10.
 - This package depends on beautifulsoup4, pytz, and pycryptodome to work.
 
 1. Installation using pip:
@@ -63,7 +63,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works with Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 3.6, 3.7, 3.8, 3.9, and 3.10 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^
