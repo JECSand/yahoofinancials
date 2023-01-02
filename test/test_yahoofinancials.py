@@ -92,7 +92,6 @@ class TestModule(TestCase):
     # Historical Stock Daily Dividend Test
     def test_yf_dividend_price(self):
         single_stock_dividend = self.test_yf_stock_single.get_daily_dividend_data('1986-09-15', '1987-09-15')
-        print(single_stock_dividend)
         expect_dict = {"C": [{'date': 544714200, 'formatted_date': '1987-04-06', 'amount': 0.332},
                              {'date': 552576600, 'formatted_date': '1987-07-06', 'amount': 0.332}]
                        }
