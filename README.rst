@@ -4,12 +4,9 @@ yahoofinancials
 
 A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, ETF, and US Treasury financial data from Yahoo Finance.
 
-.. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
-    :target: https://travis-ci.org/JECSand/yahoofinancials
+Current Version: v1.7
 
-Current Version: v1.6
-
-Version Released: 10/18/2020
+Version Released: 01/01/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -21,8 +18,8 @@ A powerful financial data module used for pulling both fundamental and technical
 
 Installation
 -------------
-- yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7.
-- The package depends on beautifulsoup4 and pytz to work.
+- yahoofinancials runs on Python 3.5, 3.6, 3.7, 3.8, 3.9, and 3.10.
+- This package depends on beautifulsoup4, pytz, and pycryptodome to work.
 
 1. Installation using pip:
 
@@ -98,7 +95,7 @@ Featured Methods
 
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-Methods Added in V1.5
+Methods Added in v1.5
 ^^^^^^^^^^^^^^^^^^^^^^^
 - get_daily_dividend_data(start_date, end_date)
 
