@@ -4,6 +4,9 @@ yahoofinancials
 
 A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, ETF, and US Treasury financial data from Yahoo Finance.
 
+.. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
+    :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
+
 Current Version: v1.7
 
 Version Released: 01/01/2023
