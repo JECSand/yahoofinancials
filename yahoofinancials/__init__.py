@@ -56,6 +56,11 @@ try:
 except:
     from urllib.request import FancyURLopener
 
+import hashlib
+from base64 import b64decode
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import json
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
@@ -163,13 +168,82 @@ class YahooFinanceETL(object):
                     raise ManagedException("Server replied with HTTP " + str(response.getcode()) +
                                            " code while opening the url: " + str(url))
         data = self._cache[url]
+        data = self._decryptData(data)
         if tech_type == '' and statement_type != 'history':
-            stores = data["context"]["dispatcher"]["stores"]["QuoteSummaryStore"]
+            stores = data["QuoteSummaryStore"]
         elif tech_type != '' and statement_type != 'history':
-            stores = data["context"]["dispatcher"]["stores"]["QuoteSummaryStore"][tech_type]
+            stores = data["QuoteSummaryStore"][tech_type]
         else:
-            stores = data["context"]["dispatcher"]["stores"]["HistoricalPriceStore"]
+            stores = data["HistoricalPriceStore"]
         return stores
+
+    def _decryptData(self,data):
+        #function taken from another package at https://github.com/ranaroussi/yfinance/pull/1253/commits/8e5f0984af347afda6be74b27a989422e49a975b
+        encrypted_stores = data['context']['dispatcher']['stores']
+        _cs = data["_cs"]
+        _cr = data["_cr"]
+
+        _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
+        password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
+
+        encrypted_stores = b64decode(encrypted_stores)
+        assert encrypted_stores[0:8] == b"Salted__"
+        salt = encrypted_stores[8:16]
+        encrypted_stores = encrypted_stores[16:]
+
+        def EVPKDF(
+            password,
+            salt,
+            keySize=32,
+            ivSize=16,
+            iterations=1,
+            hashAlgorithm="md5",
+        ) -> tuple:
+            """OpenSSL EVP Key Derivation Function
+            Args:
+                password (Union[str, bytes, bytearray]): Password to generate key from.
+                salt (Union[bytes, bytearray]): Salt to use.
+                keySize (int, optional): Output key length in bytes. Defaults to 32.
+                ivSize (int, optional): Output Initialization Vector (IV) length in bytes. Defaults to 16.
+                iterations (int, optional): Number of iterations to perform. Defaults to 1.
+                hashAlgorithm (str, optional): Hash algorithm to use for the KDF. Defaults to 'md5'.
+            Returns:
+                key, iv: Derived key and Initialization Vector (IV) bytes.
+            Taken from: https://gist.github.com/rafiibrahim8/0cd0f8c46896cafef6486cb1a50a16d3
+            OpenSSL original code: https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c#L78
+            """
+
+            assert iterations > 0, "Iterations can not be less than 1."
+
+            if isinstance(password, str):
+                password = password.encode("utf-8")
+
+            final_length = keySize + ivSize
+            key_iv = b""
+            block = None
+
+            while len(key_iv) < final_length:
+                hasher = hashlib.new(hashAlgorithm)
+                if block:
+                    hasher.update(block)
+                hasher.update(password)
+                hasher.update(salt)
+                block = hasher.digest()
+                for _ in range(1, iterations):
+                    block = hashlib.new(hashAlgorithm, block).digest()
+                key_iv += block
+
+            key, iv = key_iv[:keySize], key_iv[keySize:final_length]
+            return key, iv
+
+        key, iv = EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
+
+        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+        plaintext = cipher.decrypt(encrypted_stores)
+        plaintext = unpad(plaintext, 16, style="pkcs7")
+        decoded_stores = json.loads(plaintext)
+
+        return decoded_stores
 
     # Private static method to determine if a numerical value is in the data object being cleaned
     @staticmethod
