@@ -21,9 +21,9 @@ setup(
     keywords=['finance data', 'stocks', 'commodities', 'cryptocurrencies', 'currencies', 'forex', 'yahoo finance'],
     packages=['yahoofinancials'],
     install_requires=[
-        "beautifulsoup4",
+        "beautifulsoup4>=4.11.1",
         "pytz",
-        "pycryptodome"
+        "cryptography>=3.3.2"
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
