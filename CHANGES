@@ -29,3 +29,4 @@
 1.6   10/18/2020 -- Merged in two pull requests with bug fixes from sylvandb.
 1.7   01/01/2023 -- Merged in pull request with fixes from sedwards2000.
 1.7   01/01/2023 -- Support for python 2.7 dropped.
+1.8   01/09/2023 -- Improved decryption support

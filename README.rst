@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
     :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
 
-Current Version: v1.7
+Current Version: v1.8
 
-Version Released: 01/01/2023
+Version Released: 01/09/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -22,7 +22,7 @@ A powerful financial data module used for pulling both fundamental and technical
 Installation
 -------------
 - yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, and 3.10.
-- This package depends on beautifulsoup4, pytz, and pycryptodome to work.
+- This package depends on beautifulsoup4, pytz, and cryptography to work.
 
 1. Installation using pip:
 
