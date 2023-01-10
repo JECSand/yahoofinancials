@@ -10,20 +10,20 @@ with codecs.open('README.rst', encoding='utf-8') as f:
 
 setup(
     name='yahoofinancials',
-    version='1.7',
+    version='1.8',
     description='A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance',
     long_description=long_description,
     url='https://github.com/JECSand/yahoofinancials',
-    download_url='https://github.com/JECSand/yahoofinancials/archive/1.7.tar.gz',
+    download_url='https://github.com/JECSand/yahoofinancials/archive/1.8.tar.gz',
     author='Connor Sanders',
     author_email='connor@exceleri.com',
     license='MIT',
     keywords=['finance data', 'stocks', 'commodities', 'cryptocurrencies', 'currencies', 'forex', 'yahoo finance'],
     packages=['yahoofinancials'],
     install_requires=[
-        "beautifulsoup4",
+        "beautifulsoup4>=4.11.1",
         "pytz",
-        "pycryptodome"
+        "cryptography>=3.3.2"
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
