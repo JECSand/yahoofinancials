@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.7
+Version: 1.8
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 01/01/2023
+Version Released: 01/09/2023
 Tested on Python 3.6, 3.7, 3.8, 3.9, and 3.10
 
 Copyright (c) 2023 Connor Sanders
@@ -55,20 +55,12 @@ try:
     from urllib import FancyURLopener
 except:
     from urllib.request import FancyURLopener
-
 import hashlib
 from base64 import b64decode
-import hashlib
-from base64 import b64decode
-usePycryptodome = False  # slightly faster
-# usePycryptodome = True
-if usePycryptodome:
-    from Crypto.Cipher import AES
-    from Crypto.Util.Padding import unpad
-else:
-    from cryptography.hazmat.primitives import padding
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import json
+
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
@@ -88,10 +80,8 @@ def decrypt_cryptojs_aes(data):
     encrypted_stores = data['context']['dispatcher']['stores']
     _cs = data["_cs"]
     _cr = data["_cr"]
-
     _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
     password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
-
     encrypted_stores = b64decode(encrypted_stores)
     assert encrypted_stores[0:8] == b"Salted__"
     salt = encrypted_stores[8:16]
@@ -112,16 +102,12 @@ def decrypt_cryptojs_aes(data):
         Taken from: https://gist.github.com/rafiibrahim8/0cd0f8c46896cafef6486cb1a50a16d3
         OpenSSL original code: https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c#L78
         """
-
         assert iterations > 0, "Iterations can not be less than 1."
-
         if isinstance(password, str):
             password = password.encode("utf-8")
-
         final_length = keySize + ivSize
         key_iv = b""
         block = None
-
         while len(key_iv) < final_length:
             hasher = hashlib.new(hashAlgorithm)
             if block:
@@ -132,24 +118,16 @@ def decrypt_cryptojs_aes(data):
             for _ in range(1, iterations):
                 block = hashlib.new(hashAlgorithm, block).digest()
             key_iv += block
-
         key, iv = key_iv[:keySize], key_iv[keySize:final_length]
         return key, iv
 
     key, iv = EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
-
-    if usePycryptodome:
-        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-        plaintext = cipher.decrypt(encrypted_stores)
-        plaintext = unpad(plaintext, 16, style="pkcs7")
-    else:
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-        decryptor = cipher.decryptor()
-        plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
-        unpadder = padding.PKCS7(128).unpadder()
-        plaintext = unpadder.update(plaintext) + unpadder.finalize()
-        plaintext = plaintext.decode("utf-8")
-
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    decryptor = cipher.decryptor()
+    plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
+    unpadder = padding.PKCS7(128).unpadder()
+    plaintext = unpadder.update(plaintext) + unpadder.finalize()
+    plaintext = plaintext.decode("utf-8")
     decoded_stores = json.loads(plaintext)
     return decoded_stores
 
@@ -338,9 +316,6 @@ class YahooFinanceETL(object):
                     formatted_date = '-'
                 dict_ent = {k: formatted_date}
             elif v is None or isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
-                dict_ent = {k: v}
-            # Python 2 and Unicode
-            elif sys.version_info < (3, 0) and isinstance(v, unicode):
                 dict_ent = {k: v}
             else:
                 numerical_val = self._determine_numeric_value(v)
