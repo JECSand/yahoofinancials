@@ -1,17 +1,12 @@
-# YahooFinancials Unit Tests v1.7
-# Version Released: 01/01/2023
+# YahooFinancials Unit Tests v1.9
+# Version Released: 01/14/2023
 # Author: Connor Sanders
-# Tested on Python 3.6, 3.7, 3.8, 3.9, and 3.10
+# Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders
 # MIT License
 
-import sys
 from yahoofinancials import YahooFinancials
-
-if sys.version_info < (2, 7):
-    from unittest2 import main as test_main, SkipTest, TestCase
-else:
-    from unittest import main as test_main, SkipTest, TestCase
+from unittest import main as test_main, SkipTest, TestCase
 
 
 # Test Configuration Variables
@@ -45,11 +40,12 @@ def check_fundamental(test_data, test_type):
 class TestModule(TestCase):
 
     def setUp(self):
-        self.test_yf_stock_single = YahooFinancials('C')
+        self.test_yf_stock_single = YahooFinancials('C', country='UK')
         self.test_yf_stock_multi = YahooFinancials(stocks)
         self.test_yf_treasuries_single = YahooFinancials('^IRX')
         self.test_yf_treasuries_multi = YahooFinancials(us_treasuries)
         self.test_yf_currencies = YahooFinancials(currencies)
+        self.test_yf_concurrent = YahooFinancials(stocks, concurrent=True)
 
     # Fundamentals Test
     def test_yf_fundamentals(self):
@@ -113,6 +109,21 @@ class TestModule(TestCase):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+
+    # Test concurrent functionality of module
+    def test_yf_concurrency(self):
+        # Multi stock test
+        multi_balance_sheet_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'balance')
+        multi_income_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'income')
+        multi_all_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly',
+                                                                                   ['income', 'cash', 'balance'])
+        # Multi stock check
+        result = check_fundamental(multi_balance_sheet_data_qt, 'bal')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_income_statement_data_qt, 'inc')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_all_statement_data_qt, 'all')
+        self.assertEqual(result, True)
 
 
 if __name__ == "__main__":
