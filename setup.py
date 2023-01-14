@@ -24,8 +24,8 @@ setup(
         "beautifulsoup4>=4.11.1",
         "pytz",
         "cryptography>=3.3.2",
+        # "pycryptodome>=3.6.6"
         "requests>=2.26",
-        "pycryptodome>=3.6.6"
     ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
