@@ -31,7 +31,7 @@ A powerful financial data module used for pulling both fundamental and technical
 Installation
 -------------
 - yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11.
-- This package depends on beautifulsoup4, pytz, and cryptography to work.
+- This package depends on beautifulsoup4, pytz, requests, and cryptography to work.
 
 1. Installation using pip:
 
