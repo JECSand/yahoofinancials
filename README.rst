@@ -165,6 +165,7 @@ Additional Module Methods
 - get_earnings_per_share()
 - get_key_statistics_data()
 - get_stock_profile_data()
+- get_financial_data()
 
 Usage Examples
 --------------
