@@ -122,6 +122,7 @@ class YahooFinanceETL(object):
             raise ReferenceError("invalid country: " + self.country)
         self.concurrent = kwargs.get("concurrent", False)
         self.max_workers = kwargs.get("max_workers", 8)
+        self.timeout = kwargs.get("timeout", 30)
         self._cache = {}
 
     # Minimum interval between Yahoo Finance requests for this instance
@@ -187,19 +188,16 @@ class YahooFinanceETL(object):
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
         max_retry = 10
         for i in range(0, max_retry):
-            response = urlopener.open(url)
+            response = urlopener.open(url, timeout=self.timeout)
             if response.status_code != 200:
                 time.sleep(random.randrange(10, 20))
                 response.close()
             else:
-                # response_content = response.read()
                 soup = BeautifulSoup(response.content, "html.parser")
                 re_script = soup.find("script", string=re.compile("root.App.main")).text
-                # re_script = soup.find("script", string=re.compile("root.App.main"))
-                # response.close()
                 if re_script is not None:
                     re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
-                    if "context" in re_data and "dispatcher" in re_data["context"]:  # Keep old code, just in case
+                    if "context" in re_data and "dispatcher" in re_data["context"]:
                         data = re_data['context']['dispatcher']['stores']
                         if "QuoteSummaryStore" not in data:
                             data = decrypt_cryptojs_aes(re_data)
@@ -231,7 +229,7 @@ class YahooFinanceETL(object):
             _lastget = now
             self._request_handler(url)
         data = self._cache[url]
-        if "context" in data and "dispatcher" in data["context"]:   # Keep old code, just in case
+        if "context" in data and "dispatcher" in data["context"]:
             data = data['context']['dispatcher']['stores']
         if tech_type == '' and statement_type != 'history':
             stores = data["QuoteSummaryStore"]
@@ -397,7 +395,7 @@ class YahooFinanceETL(object):
     # Private Method to get financial data via API Call
     def _get_api_data(self, api_url, tries=0):
         urlopener = UrlOpener()
-        response = urlopener.open(api_url)
+        response = urlopener.open(api_url, timeout=self.timeout)
         if response.status_code == 200:
             res_content = response.text
             response.close()
@@ -593,7 +591,6 @@ class YahooFinanceETL(object):
         else:
             if self.concurrent:
                 with Pool(self._get_worker_count()) as pool:
-                    # _get_sub_dict_ent(self, ticker, raw_data, statement_type)
                     sub_dict_ents = pool.map(partial(self._get_sub_dict_ent,
                                                      raw_data=raw_data,
                                                      statement_type=statement_type), self.ticker)
@@ -675,7 +672,6 @@ class YahooFinanceETL(object):
                         re_data.update({self.ticker[idx]: div_data})
             else:
                 for tick in self.ticker:
-                    # TODO ASYNC
                     try:
                         div_data = self._handle_api_dividend_request(tick, start, end, interval_code)
                         re_data.update({tick: div_data})
