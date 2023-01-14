@@ -66,6 +66,9 @@ class YahooFinancials(YahooFinanceETL):
     max_workers: int, default 8, optional
         Defines the number of workers used to make concurrent requests.
         Only relevant if concurrent=True
+    timeout: int, default 30, optional
+        Defines how long a request will stay open.
+        Only relevant if concurrent=True
     """
     # Private method that handles financial statement extraction
     def _run_financial_stmt(self, statement_type, report_num, reformat):
