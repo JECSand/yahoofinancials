@@ -33,8 +33,8 @@ A powerful financial data module used for pulling both fundamental and technical
     print(balance_sheet_data_qt)
 
 - New methods in Version 1.9:
-    get_stock_profile_data()
-    get_financial_data()
+    - get_stock_profile_data()
+    - get_financial_data()
 
 
 Installation
