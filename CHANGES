@@ -35,4 +35,6 @@
 1.9   01/14/2023 -- Added new optional concurrent input to YahooFinancials(), if True extraction will run async.
 1.9   01/14/2023 -- Added new optional meta input to YahooFinancials(), currently supports language & region.
 1.9   01/14/2023 -- Updated beautifulsoup4 find to use string parameter instead deprecated text parameter.
+1.9   01/14/2023 -- Replace urllib with Requests due to deprecation warning.
+1.9   01/14/2023 -- Fixed new data encryption issue.
 

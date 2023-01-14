@@ -7,15 +7,21 @@ import datetime
 import pytz
 import random
 import logging
-from urllib.request import FancyURLopener
+import requests as requests
 import hashlib
 from base64 import b64decode
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import json
 from functools import partial
 from multiprocessing import Pool
 from yahoofinancials.maps import COUNTRY_MAP
+usePycryptodome = False
+if usePycryptodome:
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import unpad
+else:
+    from cryptography.hazmat.primitives import padding
+    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
@@ -27,17 +33,31 @@ class ManagedException(Exception):
     pass
 
 
-# Class used to open urls for financial data
-class UrlOpener(FancyURLopener):
-    version = 'w3m/0.5.3+git20180125'
+# Class used to get data from urls
+class UrlOpener:
+
+    user_agent_headers = {
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+    }
+
+    def __init__(self, session=None):
+        self._session = session or requests
+
+    def open(self, url, user_agent_headers=None, params=None, proxy=None, timeout=30):
+        response = self._session.get(
+            url=url,
+            params=params,
+            proxies=proxy,
+            timeout=timeout,
+            headers=user_agent_headers or self.user_agent_headers
+        )
+        return response
 
 
 def decrypt_cryptojs_aes(data):
     encrypted_stores = data['context']['dispatcher']['stores']
-    _cs = data["_cs"]
-    _cr = data["_cr"]
-    _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
-    password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
+    password_key = next(key for key in data.keys() if key not in ["context", "plugins"])
+    password = data[password_key]
     encrypted_stores = b64decode(encrypted_stores)
     assert encrypted_stores[0:8] == b"Salted__"
     salt = encrypted_stores[8:16]
@@ -54,7 +74,6 @@ def decrypt_cryptojs_aes(data):
             hashAlgorithm (str, optional): Hash algorithm to use for the KDF. Defaults to 'md5'.
         Returns:
             key, iv: Derived key and Initialization Vector (IV) bytes.
-
         Taken from: https://gist.github.com/rafiibrahim8/0cd0f8c46896cafef6486cb1a50a16d3
         OpenSSL original code: https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c#L78
         """
@@ -74,16 +93,22 @@ def decrypt_cryptojs_aes(data):
             for _ in range(1, iterations):
                 block = hashlib.new(hashAlgorithm, block).digest()
             key_iv += block
+
         key, iv = key_iv[:keySize], key_iv[keySize:final_length]
         return key, iv
 
     key, iv = EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
-    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-    decryptor = cipher.decryptor()
-    plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
-    unpadder = padding.PKCS7(128).unpadder()
-    plaintext = unpadder.update(plaintext) + unpadder.finalize()
-    plaintext = plaintext.decode("utf-8")
+    if usePycryptodome:
+        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+        plaintext = cipher.decrypt(encrypted_stores)
+        plaintext = unpad(plaintext, 16, style="pkcs7")
+    else:
+        cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+        decryptor = cipher.decryptor()
+        plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
+        unpadder = padding.PKCS7(128).unpadder()
+        plaintext = unpadder.update(plaintext) + unpadder.finalize()
+        plaintext = plaintext.decode("utf-8")
     decoded_stores = json.loads(plaintext)
     return decoded_stores
 
@@ -163,33 +188,33 @@ class YahooFinanceETL(object):
         max_retry = 10
         for i in range(0, max_retry):
             response = urlopener.open(url)
-            if response.getcode() != 200:
+            if response.status_code != 200:
                 time.sleep(random.randrange(10, 20))
                 response.close()
             else:
-                response_content = response.read()
-                response.close()
-                soup = BeautifulSoup(response_content, "html.parser")
-                re_script = soup.find("script", string=re.compile("root.App.main"))
+                # response_content = response.read()
+                soup = BeautifulSoup(response.content, "html.parser")
+                re_script = soup.find("script", string=re.compile("root.App.main")).text
+                # re_script = soup.find("script", string=re.compile("root.App.main"))
+                # response.close()
                 if re_script is not None:
-                    script = re_script.string
-                    re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", script).group(1))
-                    if "_cs" in re_data and "_cr" in re_data:
-                        re_data = decrypt_cryptojs_aes(re_data)
-                    data = re_data
+                    re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
                     if "context" in re_data and "dispatcher" in re_data["context"]:  # Keep old code, just in case
                         data = re_data['context']['dispatcher']['stores']
-                    try:
-                        if data.get("QuoteSummaryStore"):
-                            self._cache[url] = re_data
-                            break
-                    except AttributeError:
-                        continue
+                        if "QuoteSummaryStore" not in data:
+                            data = decrypt_cryptojs_aes(re_data)
+                        try:
+                            if data.get("QuoteSummaryStore"):
+                                self._cache[url] = data
+                                break
+                        except AttributeError:
+                            time.sleep(random.randrange(10, 20))
+                            continue
                 else:
                     time.sleep(random.randrange(10, 20))
             if i == max_retry - 1:
                 # Raise a custom exception if we can't get the web page within max_retry attempts
-                raise ManagedException("Server replied with HTTP " + str(response.getcode()) +
+                raise ManagedException("Server replied with HTTP " + str(response.status_code) +
                                        " code while opening the url: " + str(url))
 
     # Private method to scrape data from yahoo finance
@@ -373,10 +398,10 @@ class YahooFinanceETL(object):
     def _get_api_data(self, api_url, tries=0):
         urlopener = UrlOpener()
         response = urlopener.open(api_url)
-        if response.getcode() == 200:
-            res_content = response.read()
+        if response.status_code == 200:
+            res_content = response.text
             response.close()
-            return loads(res_content.decode('utf-8'))
+            return loads(res_content)
         else:
             if tries < 5:
                 time.sleep(random.randrange(10, 20))

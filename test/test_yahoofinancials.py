@@ -40,7 +40,7 @@ def check_fundamental(test_data, test_type):
 class TestModule(TestCase):
 
     def setUp(self):
-        self.test_yf_stock_single = YahooFinancials('C', country='UK')
+        self.test_yf_stock_single = YahooFinancials('C')
         self.test_yf_stock_multi = YahooFinancials(stocks)
         self.test_yf_treasuries_single = YahooFinancials('^IRX')
         self.test_yf_treasuries_multi = YahooFinancials(us_treasuries)
