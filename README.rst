@@ -4,12 +4,12 @@ yahoofinancials
 
 A python module that returns stock, cryptocurrency, forex, mutual fund, commodity futures, ETF, and US Treasury financial data from Yahoo Finance.
 
-.. image:: https://travis-ci.org/JECSand/yahoofinancials.svg?branch=master
-    :target: https://travis-ci.org/JECSand/yahoofinancials
+.. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
+    :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
 
-Current Version: v1.5
+Current Version: v1.9
 
-Version Released: 01/27/2019
+Version Released: 01/14/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -17,12 +17,21 @@ Overview
 --------
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
 
-- As of Version 0.10, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, ETFs, mutual funds, U.S. Treasuries, currencies, indexes, and stocks.
+- As of Version 1.9, YahooFinancials supports asynchronous execution and international requests.
+
+.. code-block:: python
+
+    from yahoofinancials import YahooFinancials
+    tickers = ['AAPL', 'GOOG', 'C']
+    yahoo_financials = YahooFinancials(tickers, concurrent=True, max_workers=8, country="US")
+    balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
+    print(balance_sheet_data_qt)
+
 
 Installation
 -------------
-- yahoofinancials runs on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7.
-- The package depends on beautifulsoup4 and pytz to work.
+- yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11.
+- This package depends on beautifulsoup4, pytz, requests, and cryptography to work.
 
 1. Installation using pip:
 
@@ -66,7 +75,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works with Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^
@@ -98,7 +107,7 @@ Featured Methods
 
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-Methods Added in V1.5
+Methods Added in v1.5
 ^^^^^^^^^^^^^^^^^^^^^^^
 - get_daily_dividend_data(start_date, end_date)
 
@@ -750,3 +759,48 @@ Examples of Returned JSON Data
         ]
     }
 
+13. Apple key Financial Data:
+
+
+.. code-block:: python
+
+    yahoo_financials = YahooFinancials("AAPL")
+    print(yahoo_financials.get_financial_data())
+
+
+.. code-block:: javascript
+
+    {
+        'AAPL': {
+            'ebitdaMargins': 0.29395,
+            'profitMargins': 0.21238,
+            'grossMargins': 0.37818,
+            'operatingCashflow': 69390999552,
+            'revenueGrowth': 0.018,
+            'operatingMargins': 0.24572,
+            'ebitda': 76476997632,
+            'targetLowPrice': 150,
+            'recommendationKey': 'buy',
+            'grossProfits': 98392000000,
+            'freeCashflow': 42914250752,
+            'targetMedianPrice': 270,
+            'currentPrice': 261.78,
+            'earningsGrowth': 0.039,
+            'currentRatio': 1.54,
+            'returnOnAssets': 0.11347,
+            'numberOfAnalystOpinions': 40,
+            'targetMeanPrice': 255.51,
+            'debtToEquity': 119.405,
+            'returnOnEquity': 0.55917,
+            'targetHighPrice': 300,
+            'totalCash': 100556996608,
+            'totalDebt': 108046999552,
+            'totalRevenue': 260174004224,
+            'totalCashPerShare': 22.631,
+            'financialCurrency': 'USD',
+            'maxAge': 86400,
+            'revenuePerShare': 56.341,
+            'quickRatio': 1.384,
+            'recommendationMean': 2.2
+        }
+    }

@@ -1,2 +1,9 @@
 *.pyc
 yahoofinancials/__pycache__
+/yahoofinancials.egg-info/
+.idea/
+**/.DS_Store
+/venv/
+/.pytest_cache/
+/dist/
+/build/

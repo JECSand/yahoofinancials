@@ -1,17 +1,12 @@
-# YahooFinancials Unit Tests v1.5
-# Version Released: 01/27/2019
+# YahooFinancials Unit Tests v1.9
+# Version Released: 01/14/2023
 # Author: Connor Sanders
-# Tested on Python 2.7, 3.3, 3.4, 3.5, 3.6, and 3.7
-# Copyright (c) 2019 Connor Sanders
+# Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
+# Copyright (c) 2023 Connor Sanders
 # MIT License
 
-import sys
 from yahoofinancials import YahooFinancials
-
-if sys.version_info < (2, 7):
-    from unittest2 import main as test_main, SkipTest, TestCase
-else:
-    from unittest import main as test_main, SkipTest, TestCase
+from unittest import main as test_main, SkipTest, TestCase
 
 
 # Test Configuration Variables
@@ -50,6 +45,7 @@ class TestModule(TestCase):
         self.test_yf_treasuries_single = YahooFinancials('^IRX')
         self.test_yf_treasuries_multi = YahooFinancials(us_treasuries)
         self.test_yf_currencies = YahooFinancials(currencies)
+        self.test_yf_concurrent = YahooFinancials(stocks, concurrent=True)
 
     # Fundamentals Test
     def test_yf_fundamentals(self):
@@ -92,12 +88,8 @@ class TestModule(TestCase):
     # Historical Stock Daily Dividend Test
     def test_yf_dividend_price(self):
         single_stock_dividend = self.test_yf_stock_single.get_daily_dividend_data('1986-09-15', '1987-09-15')
-        expect_dict = {"C": [{"date": 533313000, "formatted_date": "1986-11-25", "amount": 0.02999},
-                             {"date": 541348200, "formatted_date": "1987-02-26", "amount": 0.02999},
-                             {"date": 544714200, "formatted_date": "1987-04-06", "amount": 0.332},
-                             {"date": 549120600, "formatted_date": "1987-05-27", "amount": 0.02999},
-                             {"date": 552576600, "formatted_date": "1987-07-06", "amount": 0.332},
-                             {"date": 557501400, "formatted_date": "1987-09-01", "amount": 0.02999}]
+        expect_dict = {"C": [{'date': 544714200, 'formatted_date': '1987-04-06', 'amount': 0.332},
+                             {'date': 552576600, 'formatted_date': '1987-07-06', 'amount': 0.332}]
                        }
         self.assertDictEqual(single_stock_dividend, expect_dict)
 
@@ -117,6 +109,21 @@ class TestModule(TestCase):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+
+    # Test concurrent functionality of module
+    def test_yf_concurrency(self):
+        # Multi stock test
+        multi_balance_sheet_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'balance')
+        multi_income_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'income')
+        multi_all_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly',
+                                                                                   ['income', 'cash', 'balance'])
+        # Multi stock check
+        result = check_fundamental(multi_balance_sheet_data_qt, 'bal')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_income_statement_data_qt, 'inc')
+        self.assertEqual(result, True)
+        result = check_fundamental(multi_all_statement_data_qt, 'all')
+        self.assertEqual(result, True)
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ HELP_ARGS = ('-h', '--help')
 mark = '-' * 64
 
 
-def defaultapi(ticker):
+def default_api(ticker):
     tick = YF(ticker)
     print(tick.get_summary_data())
     print(mark)
@@ -43,14 +43,14 @@ def defaultapi(ticker):
         print(r)
 
 
-def customapi(queries, ts):
+def custom_api(queries, ts):
     yf = YF(ts[0] if 1 == len(ts) else ts)
     for q in queries:
         print('%s:' % (q,))
         timeit(lambda: print(getattr(yf, q)()))
 
 
-def helpapi(queries):
+def help_api(queries):
     if len(queries) == 1:
         print(__doc__ % {'scriptname': sys.argv[0], 'defaultargs': ', '.join(DEFAULT_ARGS)})
     else:
@@ -71,7 +71,6 @@ def timeit(f, *args):
     print(et - st, 'seconds')
 
 
-
 if __name__ == '__main__':
     api = set(s for s in dir(YF) if s.startswith('get_'))
     api.update(MODULE_ARGS)
@@ -80,8 +79,8 @@ if __name__ == '__main__':
     queries = [q for q in ts if q in api]
     ts = [t for t in ts if not t in queries] or DEFAULT_ARGS
     if [h for h in HELP_ARGS if h in queries]:
-        helpapi(queries)
+        help_api(queries)
     elif queries:
-        customapi(queries, ts)
+        custom_api(queries, ts)
     else:
-        timeit(defaultapi, ts[0] if 1 == len(ts) else ts)
+        timeit(default_api, ts[0] if 1 == len(ts) else ts)

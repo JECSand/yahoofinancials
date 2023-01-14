@@ -26,3 +26,15 @@
 1.4   01/13/2019 -- Added method for get_stock_earnings_data().
 1.5   01/27/2019 -- Added get_daily_dividend_data() method as request in Issue #20.
 1.5   01/27/2019 -- Added test_yf_dividend_price() unit testing method.
+1.6   10/18/2020 -- Merged in two pull requests with bug fixes from sylvandb.
+1.7   01/01/2023 -- Merged in pull request with fixes from sedwards2000.
+1.7   01/01/2023 -- Support for Python 2.7 dropped.
+1.8   01/09/2023 -- Improved decryption support.
+1.9   01/14/2023 -- Added official Python 3.11 support.
+1.9   01/14/2023 -- General code cleanup & quality improvements.
+1.9   01/14/2023 -- Added new optional concurrent input to YahooFinancials(), if True extraction will run async.
+1.9   01/14/2023 -- Added new optional meta input to YahooFinancials(), currently supports language & region.
+1.9   01/14/2023 -- Updated beautifulsoup4 find to use string parameter instead deprecated text parameter.
+1.9   01/14/2023 -- Replace urllib with Requests due to deprecation warning.
+1.9   01/14/2023 -- Fixed new data encryption issue.
+
