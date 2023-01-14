@@ -46,6 +46,9 @@ from yahoofinancials.maps import COUNTRY_MAP
 from yahoofinancials.etl import YahooFinanceETL
 from yahoofinancials.calcs import num_shares_outstanding, eps
 
+__version__ = "1.9"
+__author__ = "Connor Sanders"
+
 
 # Class containing methods to create stock data extracts
 class YahooFinancials(YahooFinanceETL):
