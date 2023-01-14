@@ -1,19 +1,22 @@
 import calendar
-import re
-from json import loads
-import time
-from bs4 import BeautifulSoup
 import datetime
-import pytz
-import random
-import logging
-import requests as requests
 import hashlib
-from base64 import b64decode
 import json
+import logging
+import random
+import re
+import time
+from base64 import b64decode
 from functools import partial
+from json import loads
 from multiprocessing import Pool
+
+import pytz
+import requests as requests
+from bs4 import BeautifulSoup
+
 from yahoofinancials.maps import COUNTRY_MAP
+
 usePycryptodome = False
 if usePycryptodome:
     from Crypto.Cipher import AES
@@ -22,9 +25,10 @@ else:
     from cryptography.hazmat.primitives import padding
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
+
+
 # logger = log_to_stderr(logging.DEBUG)
 
 
@@ -35,7 +39,6 @@ class ManagedException(Exception):
 
 # Class used to get data from urls
 class UrlOpener:
-
     user_agent_headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
     }
@@ -56,8 +59,14 @@ class UrlOpener:
 
 def decrypt_cryptojs_aes(data):
     encrypted_stores = data['context']['dispatcher']['stores']
-    password_key = next(key for key in data.keys() if key not in ["context", "plugins"])
-    password = data[password_key]
+    if "_cs" in data and "_cr" in data:
+        _cs = data["_cs"]
+        _cr = data["_cr"]
+        _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
+        password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
+    else:
+        password_key = next(key for key in data.keys() if key not in ["context", "plugins"])
+        password = data[password_key]
     encrypted_stores = b64decode(encrypted_stores)
     assert encrypted_stores[0:8] == b"Salted__"
     salt = encrypted_stores[8:16]
@@ -93,7 +102,6 @@ def decrypt_cryptojs_aes(data):
             for _ in range(1, iterations):
                 block = hashlib.new(hashAlgorithm, block).digest()
             key_iv += block
-
         key, iv = key_iv[:keySize], key_iv[keySize:final_length]
         return key, iv
 
@@ -123,6 +131,7 @@ class YahooFinanceETL(object):
         self.concurrent = kwargs.get("concurrent", False)
         self.max_workers = kwargs.get("max_workers", 8)
         self.timeout = kwargs.get("timeout", 30)
+        self.proxies = kwargs.get("proxies")
         self._cache = {}
 
     # Minimum interval between Yahoo Finance requests for this instance
@@ -175,6 +184,15 @@ class YahooFinanceETL(object):
         date_utc = date_eastern.astimezone(utc)
         return date_utc.strftime('%Y-%m-%d %H:%M:%S %Z%z')
 
+    # _get_proxy randomly picks a proxy in the proxies list if not None
+    def _get_proxy(self):
+        if self.proxies:
+            proxy_str = self.proxies
+            if isinstance(self.proxies, list):
+                proxy_str = random.choice(self.proxies)
+            return {"https": proxy_str}
+        return None
+
     # Private method that determines number of workers to use in a process
     def _get_worker_count(self):
         workers = self.max_workers
@@ -188,7 +206,7 @@ class YahooFinanceETL(object):
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
         max_retry = 10
         for i in range(0, max_retry):
-            response = urlopener.open(url, timeout=self.timeout)
+            response = urlopener.open(url, proxy=self._get_proxy(), timeout=self.timeout)
             if response.status_code != 200:
                 time.sleep(random.randrange(10, 20))
                 response.close()
@@ -386,7 +404,7 @@ class YahooFinanceETL(object):
                 event_str += s
         base_url = "https://query" + v + ".finance.yahoo.com/v8/finance/chart/"
         api_url = base_url + up_ticker + '?symbol=' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' + \
-            str(hist_obj['end']) + '&interval=' + hist_obj['interval']
+                  str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         country_ent = COUNTRY_MAP.get(self.country.upper())
         meta_str = '&lang=' + country_ent.get("lang", "en-US") + '&region=' + country_ent.get("region", "US")
         api_url += '&events=' + event_str + meta_str
@@ -395,7 +413,7 @@ class YahooFinanceETL(object):
     # Private Method to get financial data via API Call
     def _get_api_data(self, api_url, tries=0):
         urlopener = UrlOpener()
-        response = urlopener.open(api_url, timeout=self.timeout)
+        response = urlopener.open(api_url, proxy=self._get_proxy(), timeout=self.timeout)
         if response.status_code == 200:
             res_content = response.text
             response.close()

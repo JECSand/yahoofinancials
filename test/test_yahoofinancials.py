@@ -5,9 +5,9 @@
 # Copyright (c) 2023 Connor Sanders
 # MIT License
 
-from yahoofinancials import YahooFinancials
-from unittest import main as test_main, SkipTest, TestCase
+from unittest import main as test_main, TestCase
 
+from yahoofinancials import YahooFinancials
 
 # Test Configuration Variables
 stocks = ['AAPL', 'MSFT', 'C', 'IL&FSTRANS.NS']
@@ -24,13 +24,13 @@ def check_fundamental(test_data, test_type):
             return False
     elif test_type == 'inc':
         if 'incomeStatementHistoryQuarterly' in test_data and \
-                        test_data['incomeStatementHistoryQuarterly']['C'] is not None:
+                test_data['incomeStatementHistoryQuarterly']['C'] is not None:
             return True
         else:
             return False
     elif test_type == 'all':
         if 'balanceSheetHistoryQuarterly' in test_data and 'incomeStatementHistoryQuarterly' in test_data and \
-                        'cashflowStatementHistoryQuarterly' in test_data:
+                'cashflowStatementHistoryQuarterly' in test_data:
             return True
         else:
             return False
@@ -116,7 +116,7 @@ class TestModule(TestCase):
         multi_balance_sheet_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'balance')
         multi_income_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly', 'income')
         multi_all_statement_data_qt = self.test_yf_concurrent.get_financial_stmts('quarterly',
-                                                                                   ['income', 'cash', 'balance'])
+                                                                                  ['income', 'cash', 'balance'])
         # Multi stock check
         result = check_fundamental(multi_balance_sheet_data_qt, 'bal')
         self.assertEqual(result, True)
