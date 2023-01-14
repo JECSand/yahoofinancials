@@ -164,6 +164,7 @@ Additional Module Methods
 - get_net_income()
 - get_earnings_per_share()
 - get_key_statistics_data()
+- get_stock_profile_data()
 
 Usage Examples
 --------------
@@ -767,3 +768,48 @@ Examples of Returned JSON Data
         ]
     }
 
+13. Apple key Financial Data:
+
+
+.. code-block:: python
+
+    yahoo_financials = YahooFinancials("AAPL")
+    print(yahoo_financials.get_financial_data())
+
+
+.. code-block:: javascript
+
+    {
+        'AAPL': {
+            'ebitdaMargins': 0.29395,
+            'profitMargins': 0.21238,
+            'grossMargins': 0.37818,
+            'operatingCashflow': 69390999552,
+            'revenueGrowth': 0.018,
+            'operatingMargins': 0.24572,
+            'ebitda': 76476997632,
+            'targetLowPrice': 150,
+            'recommendationKey': 'buy',
+            'grossProfits': 98392000000,
+            'freeCashflow': 42914250752,
+            'targetMedianPrice': 270,
+            'currentPrice': 261.78,
+            'earningsGrowth': 0.039,
+            'currentRatio': 1.54,
+            'returnOnAssets': 0.11347,
+            'numberOfAnalystOpinions': 40,
+            'targetMeanPrice': 255.51,
+            'debtToEquity': 119.405,
+            'returnOnEquity': 0.55917,
+            'targetHighPrice': 300,
+            'totalCash': 100556996608,
+            'totalDebt': 108046999552,
+            'totalRevenue': 260174004224,
+            'totalCashPerShare': 22.631,
+            'financialCurrency': 'USD',
+            'maxAge': 86400,
+            'revenuePerShare': 56.341,
+            'quickRatio': 1.384,
+            'recommendationMean': 2.2
+        }
+    }
