@@ -17,7 +17,7 @@ Overview
 --------
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
 
-- As of Version 1.9, YahooFinancials supports asynchronous execution and international requests.
+- As of Version 1.9, YahooFinancials supports optional parameters for asynchronous execution, proxies, and international requests.
 
 .. code-block:: python
 
@@ -26,6 +26,15 @@ A powerful financial data module used for pulling both fundamental and technical
     yahoo_financials = YahooFinancials(tickers, concurrent=True, max_workers=8, country="US")
     balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
     print(balance_sheet_data_qt)
+
+    proxy_addresses = [ "mysuperproxy.com:5000", "mysuperproxy.com:5001"]
+    yahoo_financials = YahooFinancials(tickers, concurrent=True, proxies=proxy_addresses)
+    balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
+    print(balance_sheet_data_qt)
+
+- New methods in Version 1.9:
+    - get_stock_profile_data()
+    - get_financial_data()
 
 
 Installation
@@ -156,6 +165,7 @@ Additional Module Methods
 - get_earnings_per_share()
 - get_key_statistics_data()
 - get_stock_profile_data()
+- get_financial_data()
 
 Usage Examples
 --------------

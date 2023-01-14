@@ -33,8 +33,11 @@
 1.9   01/14/2023 -- Added official Python 3.11 support.
 1.9   01/14/2023 -- General code cleanup & quality improvements.
 1.9   01/14/2023 -- Added new optional concurrent input to YahooFinancials(), if True extraction will run async.
-1.9   01/14/2023 -- Added new optional meta input to YahooFinancials(), currently supports language & region.
+1.9   01/14/2023 -- Added new optional country input to YahooFinancials(), currently supports language & region.
+1.9   01/14/2023 -- Added new optional proxies input to YahooFinancials(), currently supports a list or string.
 1.9   01/14/2023 -- Updated beautifulsoup4 find to use string parameter instead deprecated text parameter.
 1.9   01/14/2023 -- Replace urllib with Requests due to deprecation warning.
-1.9   01/14/2023 -- Fixed new data encryption issue.
+1.9   01/14/2023 -- Merged in pull request from shaunpatterson.
+1.9   01/14/2023 -- Merged in pull request from flipdazed.
+1.9   01/14/2023 -- Fixed new data encryption issue & hardened.
 

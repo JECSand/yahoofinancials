@@ -42,9 +42,9 @@ earnings_data = yahoo_financials.get_stock_earnings_data()
 historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
 """
 
-from yahoofinancials.maps import COUNTRY_MAP
-from yahoofinancials.etl import YahooFinanceETL
 from yahoofinancials.calcs import num_shares_outstanding, eps
+from yahoofinancials.etl import YahooFinanceETL
+from yahoofinancials.maps import COUNTRY_MAP
 
 __version__ = "1.9"
 __author__ = "Connor Sanders"
@@ -68,8 +68,10 @@ class YahooFinancials(YahooFinanceETL):
         Only relevant if concurrent=True
     timeout: int, default 30, optional
         Defines how long a request will stay open.
-        Only relevant if concurrent=True
+    proxies: str or list, default None, optional
+        Defines any proxies to use during this instantiation.
     """
+
     # Private method that handles financial statement extraction
     def _run_financial_stmt(self, statement_type, report_num, reformat):
         report_name = self.YAHOO_FINANCIAL_TYPES[statement_type][report_num]
@@ -124,7 +126,8 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for the user to return financial data
     def get_financial_data(self, reformat=True):
         if reformat:
-            return self.get_clean_data(self.get_stock_data(statement_type='keystats', tech_type='financialData'), 'financialData')
+            return self.get_clean_data(self.get_stock_data(statement_type='keystats', tech_type='financialData'),
+                                       'financialData')
         else:
             return self.get_stock_data(statement_type='keystats', tech_type='financialData')
 
@@ -361,7 +364,7 @@ class YahooFinancials(YahooFinanceETL):
         cur_market_cap = self._stock_summary_data('marketCap')
         current = self.get_current_price()
         if isinstance(self.ticker, str):
-            return num_shares_outstanding(cur_market_cap, today_low, today_high, price_type)
+            return num_shares_outstanding(cur_market_cap, today_low, today_high, price_type, current)
         else:
             ret_obj = {}
             for tick in self.ticker:
