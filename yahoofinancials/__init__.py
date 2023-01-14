@@ -113,6 +113,13 @@ class YahooFinancials(YahooFinanceETL):
         else:
             return self.get_stock_tech_data('earnings')
 
+    # Public Method for the user to return financial data
+    def get_financial_data(self, reformat=True):
+        if reformat:
+            return self.get_clean_data(self.get_stock_data(statement_type='keystats', tech_type='financialData'), 'financialData')
+        else:
+            return self.get_stock_data(statement_type='keystats', tech_type='financialData')
+
     # Public Method for the user to get stock summary data
     def get_summary_data(self, reformat=True):
         if reformat:
