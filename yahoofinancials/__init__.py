@@ -68,7 +68,8 @@ class YahooFinancials(YahooFinanceETL):
         Only relevant if concurrent=True
     timeout: int, default 30, optional
         Defines how long a request will stay open.
-        Only relevant if concurrent=True
+    proxies: str or list, default None, optional
+        Defines any proxies to use during this instantiation.
     """
     # Private method that handles financial statement extraction
     def _run_financial_stmt(self, statement_type, report_num, reformat):
@@ -112,6 +113,14 @@ class YahooFinancials(YahooFinanceETL):
             return self.get_clean_data(self.get_stock_tech_data('earnings'), 'earnings')
         else:
             return self.get_stock_tech_data('earnings')
+
+    # Public Method for the user to return financial data
+    def get_financial_data(self, reformat=True):
+        if reformat:
+            return self.get_clean_data(self.get_stock_data(statement_type='keystats', tech_type='financialData'),
+                                       'financialData')
+        else:
+            return self.get_stock_data(statement_type='keystats', tech_type='financialData')
 
     # Public Method for the user to get stock summary data
     def get_summary_data(self, reformat=True):
@@ -346,7 +355,7 @@ class YahooFinancials(YahooFinanceETL):
         cur_market_cap = self._stock_summary_data('marketCap')
         current = self.get_current_price()
         if isinstance(self.ticker, str):
-            return num_shares_outstanding(cur_market_cap, today_low, today_high, price_type)
+            return num_shares_outstanding(cur_market_cap, today_low, today_high, price_type, current)
         else:
             ret_obj = {}
             for tick in self.ticker:
