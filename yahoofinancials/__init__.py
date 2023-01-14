@@ -42,9 +42,9 @@ earnings_data = yahoo_financials.get_stock_earnings_data()
 historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '2017-10-15', 'weekly')
 """
 
-from yahoofinancials.maps import COUNTRY_MAP
-from yahoofinancials.etl import YahooFinanceETL
 from yahoofinancials.calcs import num_shares_outstanding, eps
+from yahoofinancials.etl import YahooFinanceETL
+from yahoofinancials.maps import COUNTRY_MAP
 
 __version__ = "1.9"
 __author__ = "Connor Sanders"
@@ -71,6 +71,7 @@ class YahooFinancials(YahooFinanceETL):
     proxies: str or list, default None, optional
         Defines any proxies to use during this instantiation.
     """
+
     # Private method that handles financial statement extraction
     def _run_financial_stmt(self, statement_type, report_num, reformat):
         report_name = self.YAHOO_FINANCIAL_TYPES[statement_type][report_num]

@@ -1,19 +1,22 @@
 import calendar
-import re
-from json import loads
-import time
-from bs4 import BeautifulSoup
 import datetime
-import pytz
-import random
-import logging
-import requests as requests
 import hashlib
-from base64 import b64decode
 import json
+import logging
+import random
+import re
+import time
+from base64 import b64decode
 from functools import partial
+from json import loads
 from multiprocessing import Pool
+
+import pytz
+import requests as requests
+from bs4 import BeautifulSoup
+
 from yahoofinancials.maps import COUNTRY_MAP
+
 usePycryptodome = False
 if usePycryptodome:
     from Crypto.Cipher import AES
@@ -22,9 +25,10 @@ else:
     from cryptography.hazmat.primitives import padding
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
+
+
 # logger = log_to_stderr(logging.DEBUG)
 
 
@@ -35,7 +39,6 @@ class ManagedException(Exception):
 
 # Class used to get data from urls
 class UrlOpener:
-
     user_agent_headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
     }
@@ -401,7 +404,7 @@ class YahooFinanceETL(object):
                 event_str += s
         base_url = "https://query" + v + ".finance.yahoo.com/v8/finance/chart/"
         api_url = base_url + up_ticker + '?symbol=' + up_ticker + '&period1=' + str(hist_obj['start']) + '&period2=' + \
-            str(hist_obj['end']) + '&interval=' + hist_obj['interval']
+                  str(hist_obj['end']) + '&interval=' + hist_obj['interval']
         country_ent = COUNTRY_MAP.get(self.country.upper())
         meta_str = '&lang=' + country_ent.get("lang", "en-US") + '&region=' + country_ent.get("region", "US")
         api_url += '&events=' + event_str + meta_str

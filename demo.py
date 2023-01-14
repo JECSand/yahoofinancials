@@ -11,10 +11,11 @@
 """
 
 from __future__ import print_function
+
 import sys
 import time
-from yahoofinancials import YahooFinancials as YF
 
+from yahoofinancials import YahooFinancials as YF
 
 DEFAULT_ARGS = ('MMM', 'AAPL')
 MODULE_ARGS = ('yf', 'yahoofinancial', 'yahoofinancials')
