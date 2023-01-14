@@ -7,9 +7,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
     :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
 
-Current Version: v1.8
+Current Version: v1.9
 
-Version Released: 01/09/2023
+Version Released: 01/14/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -17,12 +17,21 @@ Overview
 --------
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
 
-- As of Version 0.10, Yahoo Financials now returns historical pricing data for commodity futures, cryptocurrencies, ETFs, mutual funds, U.S. Treasuries, currencies, indexes, and stocks.
+- As of Version 1.9, YahooFinancials supports asynchronous execution and international requests.
+
+.. code-block:: python
+
+    from yahoofinancials import YahooFinancials
+    tickers = ['AAPL', 'GOOG', 'C']
+    yahoo_financials = YahooFinancials(tickers, concurrent=True, max_workers=8, country="US")
+    balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
+    print(balance_sheet_data_qt)
+
 
 Installation
 -------------
-- yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, and 3.10.
-- This package depends on beautifulsoup4, pytz, and cryptography to work.
+- yahoofinancials runs on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11.
+- This package depends on beautifulsoup4, pytz, requests, and cryptography to work.
 
 1. Installation using pip:
 
@@ -66,7 +75,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works with Python 3.6, 3.7, 3.8, 3.9, and 3.10 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^
