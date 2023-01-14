@@ -579,6 +579,8 @@ class YahooFinanceETL(object):
                                                  hist_obj=hist_obj), self.ticker)
                     for dict_ent in dict_ents:
                         data.update(dict_ent)
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     try:
@@ -614,6 +616,8 @@ class YahooFinanceETL(object):
                                                      statement_type=statement_type), self.ticker)
                     for dict_ent in sub_dict_ents:
                         sub_dict.update(dict_ent)
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     sub_dict_ent = self._get_sub_dict_ent(tick, raw_data, statement_type)
@@ -650,6 +654,8 @@ class YahooFinanceETL(object):
                                                          raw_report_data=raw_report_data), self.ticker)
                     for idx, cleaned_data in enumerate(cleaned_data_list):
                         cleaned_data_dict.update({self.ticker[idx]: cleaned_data})
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     cleaned_data = self._clean_data_process(tick, report_type, raw_report_data)
@@ -688,6 +694,8 @@ class YahooFinanceETL(object):
                                                      interval=interval_code), self.ticker)
                     for idx, div_data in enumerate(div_data_list):
                         re_data.update({self.ticker[idx]: div_data})
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     try:

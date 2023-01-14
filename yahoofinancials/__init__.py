@@ -1,7 +1,7 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.9
+Version: 1.10
 ==============================
 
 Author: Connor Sanders
@@ -46,7 +46,7 @@ from yahoofinancials.calcs import num_shares_outstanding, eps
 from yahoofinancials.etl import YahooFinanceETL
 from yahoofinancials.maps import COUNTRY_MAP
 
-__version__ = "1.9"
+__version__ = "1.10"
 __author__ = "Connor Sanders"
 
 
