@@ -155,6 +155,7 @@ Additional Module Methods
 - get_net_income()
 - get_earnings_per_share()
 - get_key_statistics_data()
+- get_stock_profile_data()
 
 Usage Examples
 --------------
