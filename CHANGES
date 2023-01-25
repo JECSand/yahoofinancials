@@ -40,4 +40,4 @@
 1.9   01/14/2023 -- Merged in pull request from shaunpatterson.
 1.9   01/14/2023 -- Merged in pull request from flipdazed.
 1.9   01/14/2023 -- Fixed new data encryption issue & hardened.
-
+1.10  01/25/2023 -- Fixed new decryption issue.
