@@ -59,20 +59,41 @@ class UrlOpener:
 
 def decrypt_cryptojs_aes(data):
     encrypted_stores = data['context']['dispatcher']['stores']
+    password = None
+    candidate_passwords = []
     if "_cs" in data and "_cr" in data:
         _cs = data["_cs"]
         _cr = data["_cr"]
         _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
         password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
     else:
-        password_key = next(key for key in data.keys() if key not in ["context", "plugins"])
-        password = data[password_key]
+        # Currently assume one extra key in dict, which is password. Print error if
+        # more extra keys detected.
+        new_keys = [k for k in data.keys() if k not in ["context", "plugins"]]
+        new_keys_values = set([data[k] for k in new_keys])
+        # Maybe multiple keys have same value - keep one of each
+        new_keys2 = []
+        new_keys2_values = set()
+        for k in new_keys:
+            v = data[k]
+            if not v in new_keys2_values:
+                new_keys2.append(k)
+                new_keys2_values.add(v)
+        l = len(new_keys)
+        if l == 0:
+            return None
+        elif l == 1 and isinstance(data[new_keys[0]], str):
+            password_key = new_keys[0]
+        candidate_passwords += ["ad4d90b3c9f2e1d156ef98eadfa0ff93e4042f6960e54aa2a13f06f528e6b50ba4265a26a1fd5b9cd3db0d268a9c34e1d080592424309429a58bce4adc893c87", \
+            "e9a8ab8e5620b712ebc2fb4f33d5c8b9c80c0d07e8c371911c785cf674789f1747d76a909510158a7b7419e86857f2d7abbd777813ff64840e4cbc514d12bcae",
+            "6ae2523aeafa283dad746556540145bf603f44edbf37ad404d3766a8420bb5eb1d3738f52a227b88283cca9cae44060d5f0bba84b6a495082589f5fe7acbdc9e",
+            "3365117c2a368ffa5df7313a4a84988f73926a86358e8eea9497c5ff799ce27d104b68e5f2fbffa6f8f92c1fef41765a7066fa6bcf050810a9c4c7872fd3ebf0"]
     encrypted_stores = b64decode(encrypted_stores)
     assert encrypted_stores[0:8] == b"Salted__"
     salt = encrypted_stores[8:16]
     encrypted_stores = encrypted_stores[16:]
 
-    def EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5") -> tuple:
+    def _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5") -> tuple:
         """OpenSSL EVP Key Derivation Function
         Args:
             password (Union[str, bytes, bytearray]): Password to generate key from.
@@ -105,18 +126,38 @@ def decrypt_cryptojs_aes(data):
         key, iv = key_iv[:keySize], key_iv[keySize:final_length]
         return key, iv
 
-    key, iv = EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
-    if usePycryptodome:
-        cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-        plaintext = cipher.decrypt(encrypted_stores)
-        plaintext = unpad(plaintext, 16, style="pkcs7")
+    def _decrypt(encrypted_stores, password, key, iv):
+        if usePycryptodome:
+            cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+            plaintext = cipher.decrypt(encrypted_stores)
+            plaintext = unpad(plaintext, 16, style="pkcs7")
+        else:
+            cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+            decryptor = cipher.decryptor()
+            plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
+            unpadder = padding.PKCS7(128).unpadder()
+            plaintext = unpadder.update(plaintext) + unpadder.finalize()
+            plaintext = plaintext.decode("utf-8")
+        return plaintext
+    if not password is None:
+        try:
+            key, iv = _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
+        except:
+            raise Exception("error decrypting Yahoo datastore")
+        plaintext = _decrypt(encrypted_stores, password, key, iv)
     else:
-        cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-        decryptor = cipher.decryptor()
-        plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
-        unpadder = padding.PKCS7(128).unpadder()
-        plaintext = unpadder.update(plaintext) + unpadder.finalize()
-        plaintext = plaintext.decode("utf-8")
+        success = False
+        for i in range(len(candidate_passwords)):
+            password = candidate_passwords[i]
+            try:
+                key, iv = _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
+                plaintext = _decrypt(encrypted_stores, password, key, iv)
+                success = True
+                break
+            except:
+                pass
+        if not success:
+            raise Exception("error decrypting Yahoo datastore with hardcoded keys")
     decoded_stores = json.loads(plaintext)
     return decoded_stores
 
@@ -579,6 +620,8 @@ class YahooFinanceETL(object):
                                                  hist_obj=hist_obj), self.ticker)
                     for dict_ent in dict_ents:
                         data.update(dict_ent)
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     try:
@@ -614,6 +657,8 @@ class YahooFinanceETL(object):
                                                      statement_type=statement_type), self.ticker)
                     for dict_ent in sub_dict_ents:
                         sub_dict.update(dict_ent)
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     sub_dict_ent = self._get_sub_dict_ent(tick, raw_data, statement_type)
@@ -650,6 +695,8 @@ class YahooFinanceETL(object):
                                                          raw_report_data=raw_report_data), self.ticker)
                     for idx, cleaned_data in enumerate(cleaned_data_list):
                         cleaned_data_dict.update({self.ticker[idx]: cleaned_data})
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     cleaned_data = self._clean_data_process(tick, report_type, raw_report_data)
@@ -688,6 +735,8 @@ class YahooFinanceETL(object):
                                                      interval=interval_code), self.ticker)
                     for idx, div_data in enumerate(div_data_list):
                         re_data.update({self.ticker[idx]: div_data})
+                    pool.close()
+                    pool.join()
             else:
                 for tick in self.ticker:
                     try:
