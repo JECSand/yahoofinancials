@@ -1,7 +1,7 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.11
+Version: 1.10
 ==============================
 
 Author: Connor Sanders
