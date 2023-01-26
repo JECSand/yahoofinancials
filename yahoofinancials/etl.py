@@ -57,9 +57,9 @@ class UrlOpener:
         return response
 
 
-def decrypt_cryptojs_aes(data):
+def decrypt_cryptojs_aes(data, key_obj):
     encrypted_stores = data['context']['dispatcher']['stores']
-    password = None
+    password = ""
     candidate_passwords = []
     if "_cs" in data and "_cr" in data:
         _cs = data["_cs"]
@@ -67,27 +67,8 @@ def decrypt_cryptojs_aes(data):
         _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
         password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
     else:
-        # Currently assume one extra key in dict, which is password. Print error if
-        # more extra keys detected.
-        new_keys = [k for k in data.keys() if k not in ["context", "plugins"]]
-        new_keys_values = set([data[k] for k in new_keys])
-        # Maybe multiple keys have same value - keep one of each
-        new_keys2 = []
-        new_keys2_values = set()
-        for k in new_keys:
-            v = data[k]
-            if not v in new_keys2_values:
-                new_keys2.append(k)
-                new_keys2_values.add(v)
-        l = len(new_keys)
-        if l == 0:
-            return None
-        elif l == 1 and isinstance(data[new_keys[0]], str):
-            password_key = new_keys[0]
-        candidate_passwords += ["ad4d90b3c9f2e1d156ef98eadfa0ff93e4042f6960e54aa2a13f06f528e6b50ba4265a26a1fd5b9cd3db0d268a9c34e1d080592424309429a58bce4adc893c87", \
-            "e9a8ab8e5620b712ebc2fb4f33d5c8b9c80c0d07e8c371911c785cf674789f1747d76a909510158a7b7419e86857f2d7abbd777813ff64840e4cbc514d12bcae",
-            "6ae2523aeafa283dad746556540145bf603f44edbf37ad404d3766a8420bb5eb1d3738f52a227b88283cca9cae44060d5f0bba84b6a495082589f5fe7acbdc9e",
-            "3365117c2a368ffa5df7313a4a84988f73926a86358e8eea9497c5ff799ce27d104b68e5f2fbffa6f8f92c1fef41765a7066fa6bcf050810a9c4c7872fd3ebf0"]
+        for v in list(key_obj.values()):
+            password += v
     encrypted_stores = b64decode(encrypted_stores)
     assert encrypted_stores[0:8] == b"Salted__"
     salt = encrypted_stores[8:16]
@@ -123,6 +104,7 @@ def decrypt_cryptojs_aes(data):
             for _ in range(1, iterations):
                 block = hashlib.new(hashAlgorithm, block).digest()
             key_iv += block
+
         key, iv = key_iv[:keySize], key_iv[keySize:final_length]
         return key, iv
 
@@ -143,7 +125,7 @@ def decrypt_cryptojs_aes(data):
         try:
             key, iv = _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
         except:
-            raise Exception("error decrypting Yahoo datastore")
+            raise Exception("yahoofinancials failed to decrypt Yahoo data response")
         plaintext = _decrypt(encrypted_stores, password, key, iv)
     else:
         success = False
@@ -157,9 +139,63 @@ def decrypt_cryptojs_aes(data):
             except:
                 pass
         if not success:
-            raise Exception("error decrypting Yahoo datastore with hardcoded keys")
+            raise Exception("yahoofinancials failed to decrypt Yahoo data response with hardcoded keys")
     decoded_stores = json.loads(plaintext)
     return decoded_stores
+
+
+def _get_decryption_keys(soup):
+    key_count = 4
+    re_script = soup.find("script", string=re.compile("root.App.main")).text
+    re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
+    re_data.pop("context", None)
+    key_list = list(re_data.keys())
+    if re_data.get("plugins"):  # 1) attempt to get last 4 keys after plugins
+        ind = key_list.index("plugins")
+        if len(key_list) > ind+1:
+            sub_keys = key_list[ind+1:]
+            if len(sub_keys) == key_count:
+                re_obj = {}
+                missing_val = False
+                for k in sub_keys:
+                    if not re_data.get(k):
+                        missing_val = True
+                        break
+                    re_obj.update({k: re_data.get(k)})
+                if not missing_val:
+                    return re_obj
+    re_keys = []    # 2) attempt scan main.js file approach to get keys
+    prefix = "https://s.yimg.com/uc/finance/dd-site/js/main."
+    tags = [tag['src'] for tag in soup.find_all('script') if prefix in tag.get('src', '')]
+    for t in tags:
+        urlopener_js = UrlOpener()
+        response_js = urlopener_js.open(t)
+        if response_js.status_code != 200:
+            time.sleep(random.randrange(10, 20))
+            response_js.close()
+        else:
+            r_data = response_js.content.decode("utf8")
+            re_list = [
+                x.group() for x in re.finditer(r"context.dispatcher.stores=JSON.parse((?:.*?\r?\n?)*)toString", r_data)
+            ]
+            for rl in re_list:
+                re_sublist = [x.group() for x in re.finditer(r"t\[\"((?:.*?\r?\n?)*)\"\]", rl)]
+                if len(re_sublist) == key_count:
+                    re_keys = [sl.replace('t["', '').replace('"]', '') for sl in re_sublist]
+                    break
+            response_js.close()
+        if len(re_keys) == key_count:
+            break
+    re_obj = {}
+    missing_val = False
+    for k in re_keys:
+        if not re_data.get(k):
+            missing_val = True
+            break
+        re_obj.update({k: re_data.get(k)})
+    if not missing_val:
+        return re_obj
+    return None
 
 
 class YahooFinanceETL(object):
@@ -253,20 +289,24 @@ class YahooFinanceETL(object):
                 response.close()
             else:
                 soup = BeautifulSoup(response.content, "html.parser")
-                re_script = soup.find("script", string=re.compile("root.App.main")).text
-                if re_script is not None:
-                    re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
-                    if "context" in re_data and "dispatcher" in re_data["context"]:
-                        data = re_data['context']['dispatcher']['stores']
-                        if "QuoteSummaryStore" not in data:
-                            data = decrypt_cryptojs_aes(re_data)
-                        try:
-                            if data.get("QuoteSummaryStore"):
-                                self._cache[url] = data
-                                break
-                        except AttributeError:
-                            time.sleep(random.randrange(10, 20))
-                            continue
+                key_obj = _get_decryption_keys(soup)
+                if key_obj is not None:
+                    re_script = soup.find("script", string=re.compile("root.App.main")).text
+                    if re_script is not None:
+                        re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
+                        if "context" in re_data and "dispatcher" in re_data["context"]:
+                            data = re_data['context']['dispatcher']['stores']
+                            if "QuoteSummaryStore" not in data:
+                                data = decrypt_cryptojs_aes(re_data, key_obj)
+                            try:
+                                if data.get("QuoteSummaryStore"):
+                                    self._cache[url] = data
+                                    break
+                            except AttributeError:
+                                time.sleep(random.randrange(10, 20))
+                                continue
+                    else:
+                        time.sleep(random.randrange(10, 20))
                 else:
                     time.sleep(random.randrange(10, 20))
             if i == max_retry - 1:
