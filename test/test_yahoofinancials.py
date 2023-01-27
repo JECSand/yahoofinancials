@@ -104,6 +104,10 @@ class TestModule(TestCase):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+        if self.test_yf_stock_single.get_stock_profile_data().get("C").get("sector") == "Financial Services":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
         # Treasuries
         if isinstance(self.test_yf_treasuries_single.get_current_price(), float):
             self.assertEqual(True, True)
