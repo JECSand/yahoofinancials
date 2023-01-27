@@ -42,3 +42,4 @@
 1.9   01/14/2023 -- Fixed new data encryption issue & hardened.
 1.10  01/25/2023 -- Fixed new decryption issue.
 1.11  01/26/2023 -- Added a dynamic fix for the decryption issue.
+1.12  01/27/2023 -- Fixed get profile function for #127 and added additional unit test
