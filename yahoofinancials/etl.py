@@ -9,9 +9,8 @@ from multiprocessing import Pool
 import pytz
 import requests as requests
 
-from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP
+from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP, USER_AGENTS
 from yahoofinancials.utils import remove_prefix, get_request_config, get_request_category
-
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
@@ -27,20 +26,30 @@ class ManagedException(Exception):
 
 # Class used to get data from urls
 class UrlOpener:
-    user_agent_headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+
+    request_headers = {
+        "accept": "*/*",
+        "accept-encoding": "gzip, deflate, br",
+        "accept-language": "en-US,en;q=0.9",
+        "origin": "https://finance.yahoo.com",
+        "referer": "https://finance.yahoo.com",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
     }
+    user_agent = random.choice(USER_AGENTS)
+    request_headers["User-Agent"] = user_agent
 
     def __init__(self, session=None):
         self._session = session or requests
 
-    def open(self, url, user_agent_headers=None, params=None, proxy=None, timeout=30):
+    def open(self, url, request_headers=None, params=None, proxy=None, timeout=30):
         response = self._session.get(
             url=url,
             params=params,
             proxies=proxy,
             timeout=timeout,
-            headers=user_agent_headers or self.user_agent_headers
+            headers=request_headers or self.request_headers
         )
         return response
 
@@ -322,13 +331,6 @@ class YahooFinanceETL(object):
     def _encode_ticker(ticker_str):
         encoded_ticker = ticker_str.replace('=', '%3D')
         return encoded_ticker
-
-    # Private method to get time interval code
-    def _build_historical_url(self, ticker, hist_oj):
-        url = self._BASE_YAHOO_URL + self._encode_ticker(ticker) + '/history?period1=' + str(hist_oj['start']) + \
-              '&period2=' + str(hist_oj['end']) + '&interval=' + hist_oj['interval'] + '&filter=history&frequency=' + \
-              hist_oj['interval']
-        return url
 
     # Private Method to clean the dates of the newly returns historical stock data into readable format
     def _clean_historical_data(self, hist_data, last_attempt=False):

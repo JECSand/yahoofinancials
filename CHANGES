@@ -44,3 +44,5 @@
 1.11  01/26/2023 -- Added a dynamic fix for the decryption issue.
 1.12  01/27/2023 -- Fixed get profile function for #127 and added additional unit test.
 1.13  02/14/2023 -- Implemented fixes for #132 and #128 by refactoring package to use Yahoo API instead of scraping.
+1.13  02/14/2023 -- Added method to retrieve ESG data as requested in #48.
+1.13  02/14/2023 -- Added additional unit tests.

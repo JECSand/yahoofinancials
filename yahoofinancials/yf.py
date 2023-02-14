@@ -19,8 +19,7 @@ List of Included Functions:
    - statement_type can be 'income', 'balance', 'cash'.
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 2) get_stock_price_data(reformat=True)
-   - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
-3) get_stock_earnings_data(reformat=True)
+3) get_stock_earnings_data()
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 4) get_summary_data(reformat=True)
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
@@ -112,17 +111,14 @@ class YahooFinancials(YahooFinanceETL):
     def get_stock_profile_data(self, reformat=True):
         if reformat:
             return self.get_clean_data(
-                self.get_stock_data(statement_type='profile', tech_type='summaryProfile', report_name='assetProfile'),
+                self.get_stock_data(statement_type='profile', tech_type='assetProfile', report_name='assetProfile'),
                 'earnings')
         else:
-            return self.get_stock_data(statement_type='profile', tech_type='summaryProfile', report_name='assetProfile')
+            return self.get_stock_data(statement_type='profile', tech_type='assetProfile', report_name='assetProfile')
 
     # Public Method for the user to get stock earnings data
-    def get_stock_earnings_data(self, reformat=True):
-        if reformat:
-            return self.get_clean_data(self.get_stock_tech_data('earnings'), 'earnings')
-        else:
-            return self.get_stock_tech_data('earnings')
+    def get_stock_earnings_data(self):
+        return self.get_stock_tech_data('earnings')
 
     # Public Method for the user to return financial data
     def get_financial_data(self, reformat=True):
@@ -148,6 +144,10 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for the user to get stock quote data
     def get_stock_quote_type_data(self):
         return self.get_stock_tech_data('quoteType')
+
+    # Public Method for the user to get stock quote data
+    def get_esg_score_data(self):
+        return self.get_stock_tech_data('esgScores')
 
     # Public Method for user to get historical price data with
     def get_historical_price_data(self, start_date, end_date, time_interval):
