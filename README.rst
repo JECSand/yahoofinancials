@@ -7,9 +7,12 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
     :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
 
-Current Version: v1.12
+.. image:: https://static.pepy.tech/badge/yahoofinancials
+    :target: https://pepy.tech/project/yahoofinancials
 
-Version Released: 01/27/2023
+Current Version: v1.13
+
+Version Released: 02/14/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -32,9 +35,8 @@ A powerful financial data module used for pulling both fundamental and technical
     balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
     print(balance_sheet_data_qt)
 
-- New methods in Version 1.9:
-    - get_stock_profile_data()
-    - get_financial_data()
+- New methods in Version 1.13:
+    - get_esg_score_data()
 
 
 Installation
@@ -95,8 +97,7 @@ Featured Methods
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 2. get_stock_price_data(reformat=True)
 
-   - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
-3. get_stock_earnings_data(reformat=True)
+3. get_stock_earnings_data()
 
    - reformat optional value defaulted to true. Enter False for unprocessed raw data from Yahoo Finance.
 4. get_summary_data(reformat=True)
@@ -116,12 +117,11 @@ Featured Methods
 
    - price_type can also be set to 'average' to calculate the shares outstanding with the daily average price.
 
-Methods Added in v1.5
-^^^^^^^^^^^^^^^^^^^^^^^
-- get_daily_dividend_data(start_date, end_date)
-
 Additional Module Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^
+- get_daily_dividend_data(start_date, end_date)
+- get_stock_profile_data()
+- get_financial_data()
 - get_interest_expense()
 - get_operating_income()
 - get_total_operating_expense()
