@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.10
-# Version Released: 01/14/2023
+# YahooFinancials Unit Tests v1.13
+# Version Released: 02/14/2023
 # Author: Connor Sanders
 # Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders
@@ -100,7 +100,7 @@ class TestModule(TestCase):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
-        if isinstance(self.test_yf_stock_single.get_net_income(), int):
+        if isinstance(self.test_yf_stock_single.get_net_income(), float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)

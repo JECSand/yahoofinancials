@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.12
+Version: 1.13
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 01/27/2023
+Version Released: 02/14/2023
 Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
 
 Copyright (c) 2023 Connor Sanders
@@ -45,7 +45,7 @@ historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '20
 from yahoofinancials.calcs import num_shares_outstanding, eps
 from yahoofinancials.etl import YahooFinanceETL
 
-__version__ = "1.12"
+__version__ = "1.13"
 __author__ = "Connor Sanders"
 
 
@@ -72,24 +72,25 @@ class YahooFinancials(YahooFinanceETL):
     """
 
     # Private method that handles financial statement extraction
-    def _run_financial_stmt(self, statement_type, report_num, reformat):
+    def _run_financial_stmt(self, statement_type, report_num, frequency, reformat):
+        hist_obj = {"interval": frequency}
         report_name = self.YAHOO_FINANCIAL_TYPES[statement_type][report_num]
         if reformat:
-            raw_data = self.get_stock_data(statement_type, report_name=report_name)
+            raw_data = self.get_stock_data(statement_type, report_name=report_name, hist_obj=hist_obj)
             data = self.get_reformatted_stmt_data(raw_data, statement_type)
         else:
-            data = self.get_stock_data(statement_type, report_name=report_name)
+            data = self.get_stock_data(statement_type, report_name=report_name, hist_obj=hist_obj)
         return data
 
     # Public Method for the user to get financial statement data
     def get_financial_stmts(self, frequency, statement_type, reformat=True):
         report_num = self.get_report_type(frequency)
         if isinstance(statement_type, str):
-            data = self._run_financial_stmt(statement_type, report_num, reformat)
+            data = self._run_financial_stmt(statement_type, report_num, frequency, reformat)
         else:
             data = {}
             for stmt_type in statement_type:
-                re_data = self._run_financial_stmt(stmt_type, report_num, reformat)
+                re_data = self._run_financial_stmt(stmt_type, report_num, frequency, reformat)
                 data.update(re_data)
         return data
 
@@ -111,9 +112,10 @@ class YahooFinancials(YahooFinanceETL):
     def get_stock_profile_data(self, reformat=True):
         if reformat:
             return self.get_clean_data(
-                self.get_stock_data(statement_type='profile', tech_type='', report_name='assetProfile'), 'earnings')
+                self.get_stock_data(statement_type='profile', tech_type='summaryProfile', report_name='assetProfile'),
+                'earnings')
         else:
-            return self.get_stock_data(statement_type='profile', tech_type='', report_name='assetProfile')
+            return self.get_stock_data(statement_type='profile', tech_type='summaryProfile', report_name='assetProfile')
 
     # Public Method for the user to get stock earnings data
     def get_stock_earnings_data(self, reformat=True):
@@ -195,7 +197,7 @@ class YahooFinancials(YahooFinanceETL):
                 date_key = re_data[self.ticker][0].keys()[0]
             except (IndexError, AttributeError, TypeError):
                 date_key = list(re_data[self.ticker][0])[0]
-            data = re_data[self.ticker][0][date_key][field_name]
+            data = re_data[self.ticker][0][date_key].get(field_name)
         else:
             data = {}
             for tick in self.ticker:
@@ -317,7 +319,8 @@ class YahooFinancials(YahooFinanceETL):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'interestExpense', 'annual')
 
     def get_operating_income(self):
-        return self._financial_statement_data('income', 'incomeStatementHistory', 'operatingIncome', 'annual')
+        return self._financial_statement_data('income', 'incomeStatementHistory', 'netIncomeContinuousOperations',
+                                              'annual')
 
     def get_total_operating_expense(self):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'totalOperatingExpenses', 'annual')

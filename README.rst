@@ -7,9 +7,12 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml/badge.svg?branch=master
     :target: https://github.com/JECSand/yahoofinancials/actions/workflows/test.yml
 
-Current Version: v1.12
+.. image:: https://static.pepy.tech/badge/yahoofinancials
+    :target: https://pepy.tech/project/yahoofinancials
 
-Version Released: 01/27/2023
+Current Version: v1.13
+
+Version Released: 02/14/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
