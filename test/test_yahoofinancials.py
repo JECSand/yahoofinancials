@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.10
-# Version Released: 01/14/2023
+# YahooFinancials Unit Tests v1.13
+# Version Released: 02/14/2023
 # Author: Connor Sanders
 # Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders
@@ -95,19 +95,52 @@ class TestModule(TestCase):
 
     # Extra Module Methods Test
     def test_yf_module_methods(self):
-        # Stocks
+        # Stock Current Price
         if isinstance(self.test_yf_stock_single.get_current_price(), float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
-        if isinstance(self.test_yf_stock_single.get_net_income(), int):
+        # Stock Net Income
+        if isinstance(self.test_yf_stock_single.get_net_income(), float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+        # Stock Profile Data
         if self.test_yf_stock_single.get_stock_profile_data().get("C").get("sector") == "Financial Services":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+
+        # Stock Financial Data
+        if self.test_yf_stock_single.get_financial_data().get("C").get("financialCurrency") == "USD":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock Summary Data
+        if self.test_yf_stock_single.get_summary_data().get("C").get("currency") == "USD":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock Price Data
+        if self.test_yf_stock_single.get_stock_price_data().get("C").get("exchangeName") == "NYSE":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock Key Statistics
+        if isinstance(self.test_yf_stock_single.get_key_statistics_data().get("C").get("forwardPE"), float):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock ESG SCORES
+        if self.test_yf_stock_single.get_esg_score_data().get("C").get("peerGroup") == "Banks":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
         # Treasuries
         if isinstance(self.test_yf_treasuries_single.get_current_price(), float):
             self.assertEqual(True, True)

@@ -1,29 +1,16 @@
 import calendar
 import datetime
-import hashlib
-import json
 import logging
 import random
-import re
 import time
-from base64 import b64decode
 from functools import partial
 from json import loads
 from multiprocessing import Pool
-
 import pytz
 import requests as requests
-from bs4 import BeautifulSoup
 
-from yahoofinancials.maps import COUNTRY_MAP
-
-usePycryptodome = False
-if usePycryptodome:
-    from Crypto.Cipher import AES
-    from Crypto.Util.Padding import unpad
-else:
-    from cryptography.hazmat.primitives import padding
-    from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP, USER_AGENTS
+from yahoofinancials.utils import remove_prefix, get_request_config, get_request_category
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
@@ -39,163 +26,32 @@ class ManagedException(Exception):
 
 # Class used to get data from urls
 class UrlOpener:
-    user_agent_headers = {
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+
+    request_headers = {
+        "accept": "*/*",
+        "accept-encoding": "gzip, deflate, br",
+        "accept-language": "en-US,en;q=0.9",
+        "origin": "https://finance.yahoo.com",
+        "referer": "https://finance.yahoo.com",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-site",
     }
+    user_agent = random.choice(USER_AGENTS)
+    request_headers["User-Agent"] = user_agent
 
     def __init__(self, session=None):
         self._session = session or requests
 
-    def open(self, url, user_agent_headers=None, params=None, proxy=None, timeout=30):
+    def open(self, url, request_headers=None, params=None, proxy=None, timeout=30):
         response = self._session.get(
             url=url,
             params=params,
             proxies=proxy,
             timeout=timeout,
-            headers=user_agent_headers or self.user_agent_headers
+            headers=request_headers or self.request_headers
         )
         return response
-
-
-def decrypt_cryptojs_aes(data, key_obj):
-    encrypted_stores = data['context']['dispatcher']['stores']
-    password = ""
-    candidate_passwords = []
-    if "_cs" in data and "_cr" in data:
-        _cs = data["_cs"]
-        _cr = data["_cr"]
-        _cr = b"".join(int.to_bytes(i, length=4, byteorder="big", signed=True) for i in json.loads(_cr)["words"])
-        password = hashlib.pbkdf2_hmac("sha1", _cs.encode("utf8"), _cr, 1, dklen=32).hex()
-    else:
-        for v in list(key_obj.values()):
-            password += v
-    encrypted_stores = b64decode(encrypted_stores)
-    assert encrypted_stores[0:8] == b"Salted__"
-    salt = encrypted_stores[8:16]
-    encrypted_stores = encrypted_stores[16:]
-
-    def _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5") -> tuple:
-        """OpenSSL EVP Key Derivation Function
-        Args:
-            password (Union[str, bytes, bytearray]): Password to generate key from.
-            salt (Union[bytes, bytearray]): Salt to use.
-            keySize (int, optional): Output key length in bytes. Defaults to 32.
-            ivSize (int, optional): Output Initialization Vector (IV) length in bytes. Defaults to 16.
-            iterations (int, optional): Number of iterations to perform. Defaults to 1.
-            hashAlgorithm (str, optional): Hash algorithm to use for the KDF. Defaults to 'md5'.
-        Returns:
-            key, iv: Derived key and Initialization Vector (IV) bytes.
-        Taken from: https://gist.github.com/rafiibrahim8/0cd0f8c46896cafef6486cb1a50a16d3
-        OpenSSL original code: https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c#L78
-        """
-        assert iterations > 0, "Iterations can not be less than 1."
-        if isinstance(password, str):
-            password = password.encode("utf-8")
-        final_length = keySize + ivSize
-        key_iv = b""
-        block = None
-        while len(key_iv) < final_length:
-            hasher = hashlib.new(hashAlgorithm)
-            if block:
-                hasher.update(block)
-            hasher.update(password)
-            hasher.update(salt)
-            block = hasher.digest()
-            for _ in range(1, iterations):
-                block = hashlib.new(hashAlgorithm, block).digest()
-            key_iv += block
-
-        key, iv = key_iv[:keySize], key_iv[keySize:final_length]
-        return key, iv
-
-    def _decrypt(encrypted_stores, password, key, iv):
-        if usePycryptodome:
-            cipher = AES.new(key, AES.MODE_CBC, iv=iv)
-            plaintext = cipher.decrypt(encrypted_stores)
-            plaintext = unpad(plaintext, 16, style="pkcs7")
-        else:
-            cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
-            decryptor = cipher.decryptor()
-            plaintext = decryptor.update(encrypted_stores) + decryptor.finalize()
-            unpadder = padding.PKCS7(128).unpadder()
-            plaintext = unpadder.update(plaintext) + unpadder.finalize()
-            plaintext = plaintext.decode("utf-8")
-        return plaintext
-    if not password is None:
-        try:
-            key, iv = _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
-        except:
-            raise Exception("yahoofinancials failed to decrypt Yahoo data response")
-        plaintext = _decrypt(encrypted_stores, password, key, iv)
-    else:
-        success = False
-        for i in range(len(candidate_passwords)):
-            password = candidate_passwords[i]
-            try:
-                key, iv = _EVPKDF(password, salt, keySize=32, ivSize=16, iterations=1, hashAlgorithm="md5")
-                plaintext = _decrypt(encrypted_stores, password, key, iv)
-                success = True
-                break
-            except:
-                pass
-        if not success:
-            raise Exception("yahoofinancials failed to decrypt Yahoo data response with hardcoded keys")
-    decoded_stores = json.loads(plaintext)
-    return decoded_stores
-
-
-def _get_decryption_keys(soup):
-    key_count = 4
-    re_script = soup.find("script", string=re.compile("root.App.main")).text
-    re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
-    re_data.pop("context", None)
-    key_list = list(re_data.keys())
-    if re_data.get("plugins"):  # 1) attempt to get last 4 keys after plugins
-        ind = key_list.index("plugins")
-        if len(key_list) > ind+1:
-            sub_keys = key_list[ind+1:]
-            if len(sub_keys) == key_count:
-                re_obj = {}
-                missing_val = False
-                for k in sub_keys:
-                    if not re_data.get(k):
-                        missing_val = True
-                        break
-                    re_obj.update({k: re_data.get(k)})
-                if not missing_val:
-                    return re_obj
-    re_keys = []    # 2) attempt scan main.js file approach to get keys
-    prefix = "https://s.yimg.com/uc/finance/dd-site/js/main."
-    tags = [tag['src'] for tag in soup.find_all('script') if prefix in tag.get('src', '')]
-    for t in tags:
-        urlopener_js = UrlOpener()
-        response_js = urlopener_js.open(t)
-        if response_js.status_code != 200:
-            time.sleep(random.randrange(10, 20))
-            response_js.close()
-        else:
-            r_data = response_js.content.decode("utf8")
-            re_list = [
-                x.group() for x in re.finditer(r"context.dispatcher.stores=JSON.parse((?:.*?\r?\n?)*)toString", r_data)
-            ]
-            for rl in re_list:
-                re_sublist = [x.group() for x in re.finditer(r"t\[\"((?:.*?\r?\n?)*)\"\]", rl)]
-                if len(re_sublist) == key_count:
-                    re_keys = [sl.replace('t["', '').replace('"]', '') for sl in re_sublist]
-                    break
-            response_js.close()
-        if len(re_keys) == key_count:
-            break
-    re_obj = {}
-    missing_val = False
-    for k in re_keys:
-        if not re_data.get(k):
-            missing_val = True
-            break
-        re_obj.update({k: re_data.get(k)})
-    if not missing_val:
-        return re_obj
-    return None
 
 
 class YahooFinanceETL(object):
@@ -216,12 +72,27 @@ class YahooFinanceETL(object):
 
     # Meta-data dictionaries for the classes to use
     YAHOO_FINANCIAL_TYPES = {
-        'income': ['financials', 'incomeStatementHistory', 'incomeStatementHistoryQuarterly'],
-        'balance': ['balance-sheet', 'balanceSheetHistory', 'balanceSheetHistoryQuarterly', 'balanceSheetStatements'],
-        'cash': ['cash-flow', 'cashflowStatementHistory', 'cashflowStatementHistoryQuarterly', 'cashflowStatements'],
+        'income': [
+            'income_statement',
+            'incomeStatementHistory',
+            'incomeStatementHistoryQuarterly',
+            'incomeStatements'
+        ],
+        'balance': [
+            'balance_sheet',
+            'balanceSheetHistory',
+            'balanceSheetHistoryQuarterly',
+            'balanceSheetStatements',
+        ],
+        'cash': [
+            'cash_flow',
+            'cashflowStatementHistory',
+            'cashflowStatementHistoryQuarterly',
+            'cashflowStatements',
+        ],
         'keystats': ['key-statistics'],
         'history': ['history'],
-        'profile': ['profile']
+        'profile': ['summaryProfile']
     }
 
     # Interval value translation dictionary
@@ -239,8 +110,10 @@ class YahooFinanceETL(object):
     def get_report_type(frequency):
         if frequency == 'annual':
             report_num = 1
-        else:
+        elif frequency == 'quarterly':
             report_num = 2
+        else:
+            report_num = 3
         return report_num
 
     # Public static method to format date serial string to readable format and vice versa
@@ -278,8 +151,35 @@ class YahooFinanceETL(object):
             workers = len(self.ticker)
         return workers
 
+    # Private method to construct historical data url
+    def _construct_url(self, symbol, config, params, freq, request_type):
+        url = config["path"].replace("{symbol}", symbol.lower())
+        _default_query_params = COUNTRY_MAP.get(self.country.upper())
+        for k, v in config['request'].items():  # request type defaults
+            if k == "type":
+                params.update({k: v['options'][request_type].get(freq)})
+            elif k == "modules" and request_type in v['options']:
+                params.update({k: request_type})
+            elif k not in params:
+                params.update({k: v['default']})
+        for k, v in _default_query_params.items():  # general defaults
+            if k not in params:
+                params.update({k: v})
+        if params.get("type"):
+            field_params = "%2C".join(params.get("type"))
+            url += "?type=" + field_params
+            for k, v in params.items():
+                if k != "type":
+                    url += "&" + k + "=" + str(v)
+        elif params.get("modules"):
+            url += "?modules=" + params.get("modules")
+            for k, v in params.items():
+                if k != "modules":
+                    url += "&" + k + "=" + str(v)
+        return url
+
     # Private method to execute a web scrape request and decrypt the return
-    def _request_handler(self, url):
+    def _request_handler(self, url, res_field=""):
         urlopener = UrlOpener()
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
         max_retry = 10
@@ -289,55 +189,58 @@ class YahooFinanceETL(object):
                 time.sleep(random.randrange(10, 20))
                 response.close()
             else:
-                soup = BeautifulSoup(response.content, "html.parser")
-                key_obj = _get_decryption_keys(soup)
-                if key_obj is not None:
-                    re_script = soup.find("script", string=re.compile("root.App.main")).text
-                    if re_script is not None:
-                        re_data = loads(re.search("root.App.main\s+=\s+(\{.*\})", re_script).group(1))
-                        if "context" in re_data and "dispatcher" in re_data["context"]:
-                            data = re_data['context']['dispatcher']['stores']
-                            if "QuoteSummaryStore" not in data:
-                                data = decrypt_cryptojs_aes(re_data, key_obj)
-                            try:
-                                if data.get("QuoteSummaryStore"):
-                                    self._cache[url] = data
-                                    break
-                            except AttributeError:
-                                time.sleep(random.randrange(10, 20))
-                                continue
-                    else:
-                        time.sleep(random.randrange(10, 20))
-                else:
-                    time.sleep(random.randrange(10, 20))
+                res_content = response.text
+                response.close()
+                self._cache[url] = loads(res_content).get(res_field)
+                break
             if i == max_retry - 1:
                 # Raise a custom exception if we can't get the web page within max_retry attempts
                 raise ManagedException("Server replied with HTTP " + str(response.status_code) +
                                        " code while opening the url: " + str(url))
 
-    # Private method to scrape data from yahoo finance
-    def _scrape_data(self, url, tech_type, statement_type):
+    @staticmethod
+    def _format_raw_fundamental_data(raw_data):
+        data = {}
+        for i in raw_data.get("result"):
+            for k, v in i.items():
+                if k not in ['meta', 'timestamp']:
+                    cleaned_k = remove_prefix(remove_prefix(remove_prefix(k, "quarterly"), "annual"), "trailing")
+                    if cleaned_k in ['EBIT']:
+                        cleaned_k = cleaned_k.lower()
+                    else:
+                        cleaned_k = cleaned_k[0].lower() + cleaned_k[1:]
+                    for rec in v:
+                        if rec.get("asOfDate") in data:
+                            data[rec.get("asOfDate")].update({cleaned_k: rec.get('reportedValue', {}).get('raw')})
+                        else:
+                            data.update({rec.get("asOfDate"): {cleaned_k: rec.get('reportedValue', {}).get('raw')}})
+        return data
+
+    @staticmethod
+    def _format_raw_module_data(raw_data, tech_type):
+        data = {}
+        for i in raw_data.get("result", {}):
+            if i.get(tech_type):
+                for k, v in i.get(tech_type, {}).items():
+                    data.update({k: v})
+        return data
+
+    # Private method to _get_historical_data from yahoo finance
+    def _get_historical_data(self, url, config, tech_type, statement_type):
         global _lastget
-        country_ent = COUNTRY_MAP.get(self.country.upper())
-        meta_str = '&lang=' + country_ent.get("lang", "en-US") + '&region=' + country_ent.get("region", "US")
-        url += meta_str
         if not self._cache.get(url):
             now = int(time.time())
             if _lastget and now - _lastget < self._MIN_INTERVAL:
                 time.sleep(self._MIN_INTERVAL - (now - _lastget) + 1)
                 now = int(time.time())
             _lastget = now
-            self._request_handler(url)
+            self._request_handler(url, config.get("response_field"))
         data = self._cache[url]
-        if "context" in data and "dispatcher" in data["context"]:
-            data = data['context']['dispatcher']['stores']
-        if tech_type == '' and statement_type != 'history':
-            stores = data["QuoteSummaryStore"]
-        elif tech_type != '' and statement_type != 'history':
-            stores = data["QuoteSummaryStore"][tech_type]
+        if tech_type == '' and statement_type in ["income", "balance", "cash"]:
+            data = self._format_raw_fundamental_data(data)
         else:
-            stores = data["HistoricalPriceStore"]
-        return stores
+            data = self._format_raw_module_data(data, tech_type)
+        return data
 
     # Private static method to determine if a numerical value is in the data object being cleaned
     @staticmethod
@@ -428,13 +331,6 @@ class YahooFinanceETL(object):
     def _encode_ticker(ticker_str):
         encoded_ticker = ticker_str.replace('=', '%3D')
         return encoded_ticker
-
-    # Private method to get time interval code
-    def _build_historical_url(self, ticker, hist_oj):
-        url = self._BASE_YAHOO_URL + self._encode_ticker(ticker) + '/history?period1=' + str(hist_oj['start']) + \
-              '&period2=' + str(hist_oj['end']) + '&interval=' + hist_oj['interval'] + '&filter=history&frequency=' + \
-              hist_oj['interval']
-        return url
 
     # Private Method to clean the dates of the newly returns historical stock data into readable format
     def _clean_historical_data(self, hist_data, last_attempt=False):
@@ -571,33 +467,40 @@ class YahooFinanceETL(object):
 
     # Private Method to take scrapped data and build a data dictionary with, used by get_stock_data()
     def _create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
-        YAHOO_URL = self._BASE_YAHOO_URL + up_ticker + '/' + self.YAHOO_FINANCIAL_TYPES[statement_type][0] + '?p=' + \
-                    up_ticker
-        if tech_type == '' and statement_type != 'history':
-            try:
-                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-                dict_ent = {up_ticker: re_data[u'' + report_name], 'dataType': report_name}
-            except KeyError:
-                re_data = None
-                dict_ent = {up_ticker: re_data, 'dataType': report_name}
-        elif tech_type != '' and statement_type != 'history':
-            try:
-                re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-            except KeyError:
-                re_data = None
-            dict_ent = {up_ticker: re_data}
-        else:
-            YAHOO_URL = self._build_historical_url(up_ticker, hist_obj)
+        if statement_type == 'history':
             try:
                 cleaned_re_data = self._recursive_api_request(hist_obj, up_ticker)
             except KeyError:
+                cleaned_re_data = None
+            return {up_ticker: cleaned_re_data}
+        else:
+            dict_ent = {}
+            params = {}
+            r_map = get_request_config(tech_type, REQUEST_MAP)
+            r_cat = get_request_category(tech_type, self.YAHOO_FINANCIAL_TYPES, statement_type)
+            YAHOO_URL = self._construct_url(
+                up_ticker.lower(),
+                r_map,
+                params,
+                hist_obj.get("interval"),
+                r_cat
+            )
+            if tech_type == '' and statement_type != 'history':
                 try:
-                    re_data = self._scrape_data(YAHOO_URL, tech_type, statement_type)
-                    cleaned_re_data = self._clean_historical_data(re_data)
+                    re_data = self._get_historical_data(YAHOO_URL, REQUEST_MAP['fundamentals'], tech_type,
+                                                        statement_type)
+                    dict_ent = {up_ticker: re_data, 'dataType': report_name}
                 except KeyError:
-                    cleaned_re_data = None
-            dict_ent = {up_ticker: cleaned_re_data}
-        return dict_ent
+                    re_data = None
+                    dict_ent = {up_ticker: re_data, 'dataType': report_name}
+            elif tech_type != '' and statement_type != 'history':
+                r_map = get_request_config(tech_type, REQUEST_MAP)
+                try:
+                    re_data = self._get_historical_data(YAHOO_URL, r_map, tech_type, statement_type)
+                except KeyError:
+                    re_data = None
+                dict_ent = {up_ticker: re_data}
+            return dict_ent
 
     # Private method to return the stmt_id for the reformat_process
     def _get_stmt_id(self, statement_type, raw_data):
@@ -612,32 +515,20 @@ class YahooFinanceETL(object):
         return stmt_id
 
     # Private Method for the Reformat Process
-    def _reformat_stmt_data_process(self, raw_data, statement_type):
+    @staticmethod
+    def _reformat_stmt_data_process(raw_data):
         final_data_list = []
         if raw_data is not None:
-            stmt_id = self._get_stmt_id(statement_type, raw_data)
-            if stmt_id is None:
-                return final_data_list
-            hashed_data_list = raw_data[stmt_id]
-            for data_item in hashed_data_list:
-                data_date = ''
-                sub_data_dict = {}
-                for k, v in data_item.items():
-                    if k == 'endDate':
-                        data_date = v['fmt']
-                    elif k != 'maxAge':
-                        numerical_val = self._determine_numeric_value(v)
-                        sub_dict_item = {k: numerical_val}
-                        sub_data_dict.update(sub_dict_item)
-                dict_item = {data_date: sub_data_dict}
+            for date_key, data_item in raw_data.items():
+                dict_item = {date_key: data_item}
                 final_data_list.append(dict_item)
             return final_data_list
         else:
             return raw_data
 
     # Private Method to return subdict entry for the statement reformat process
-    def _get_sub_dict_ent(self, ticker, raw_data, statement_type):
-        form_data_list = self._reformat_stmt_data_process(raw_data[ticker], statement_type)
+    def _get_sub_dict_ent(self, ticker, raw_data):
+        form_data_list = self._reformat_stmt_data_process(raw_data[ticker])
         return {ticker: form_data_list}
 
     # Public method to get time interval code
@@ -686,7 +577,7 @@ class YahooFinanceETL(object):
         sub_dict, data_dict = {}, {}
         data_type = raw_data['dataType']
         if isinstance(self.ticker, str):
-            sub_dict_ent = self._get_sub_dict_ent(self.ticker, raw_data, statement_type)
+            sub_dict_ent = self._get_sub_dict_ent(self.ticker, raw_data)
             sub_dict.update(sub_dict_ent)
             dict_ent = {data_type: sub_dict}
             data_dict.update(dict_ent)
@@ -694,15 +585,14 @@ class YahooFinanceETL(object):
             if self.concurrent:
                 with Pool(self._get_worker_count()) as pool:
                     sub_dict_ents = pool.map(partial(self._get_sub_dict_ent,
-                                                     raw_data=raw_data,
-                                                     statement_type=statement_type), self.ticker)
+                                                     raw_data=raw_data), self.ticker)
                     for dict_ent in sub_dict_ents:
                         sub_dict.update(dict_ent)
                     pool.close()
                     pool.join()
             else:
                 for tick in self.ticker:
-                    sub_dict_ent = self._get_sub_dict_ent(tick, raw_data, statement_type)
+                    sub_dict_ent = self._get_sub_dict_ent(tick, raw_data)
                     sub_dict.update(sub_dict_ent)
             dict_ent = {data_type: sub_dict}
             data_dict.update(dict_ent)
