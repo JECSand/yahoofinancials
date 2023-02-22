@@ -46,3 +46,6 @@
 1.13  02/14/2023 -- Implemented fixes for #132 and #128 by refactoring package to use Yahoo API instead of scraping.
 1.13  02/14/2023 -- Added method to retrieve ESG data as requested in #48.
 1.13  02/14/2023 -- Added additional unit tests.
+1.14  02/21/2023 -- Fixed get_ten_day_avg_daily_volume as reported in #137.
+1.14  02/21/2023 -- Removed get_three_month_avg_daily_volume due to value now missing in Yahoo data.
+1.14  02/21/2023 -- Added unit test for get_ten_day_avg_daily_volume

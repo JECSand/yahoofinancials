@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.13
-# Version Released: 02/14/2023
+# YahooFinancials Unit Tests v1.14
+# Version Released: 02/21/2023
 # Author: Connor Sanders
 # Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders
@@ -95,6 +95,13 @@ class TestModule(TestCase):
 
     # Extra Module Methods Test
     def test_yf_module_methods(self):
+
+        # 10 Day Average Daily Volume
+        if isinstance(self.test_yf_stock_single.get_ten_day_avg_daily_volume(), int):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+        
         # Stock Current Price
         if isinstance(self.test_yf_stock_single.get_current_price(), float):
             self.assertEqual(True, True)
