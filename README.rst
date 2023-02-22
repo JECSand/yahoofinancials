@@ -16,9 +16,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://static.pepy.tech/badge/yahoofinancials/week
     :target: https://pepy.tech/project/yahoofinancials
 
-Current Version: v1.13
+Current Version: v1.14
 
-Version Released: 02/14/2023
+Version Released: 02/21/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -145,7 +145,6 @@ Additional Module Methods
 - get_prev_close_price()
 - get_open_price()
 - get_ten_day_avg_daily_volume()
-- get_three_month_avg_daily_volume()
 - get_stock_exchange()
 - get_market_cap()
 - get_daily_low()
