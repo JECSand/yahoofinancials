@@ -10,7 +10,7 @@ with codecs.open('README.rst', encoding='utf-8') as f:
 
 setup(
     name='yahoofinancials',
-    version='1.14',
+    version='1.15',
     description='A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance',
     long_description=long_description,
     url='https://github.com/JECSand/yahoofinancials',

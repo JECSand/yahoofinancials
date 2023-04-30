@@ -181,21 +181,28 @@ class YahooFinanceETL(object):
     # Private method to execute a web scrape request and decrypt the return
     def _request_handler(self, url, res_field=""):
         urlopener = UrlOpener()
-        # Try to open the URL up to 10 times sleeping random time if something goes wrong
+        # Try to open the URL up to 10 times sleeping random time if the server responds with a 5xx code
         max_retry = 10
+
         for i in range(0, max_retry):
             response = urlopener.open(url, proxy=self._get_proxy(), timeout=self.timeout)
-            if response.status_code != 200:
-                time.sleep(random.randrange(10, 20))
-                response.close()
-            else:
-                res_content = response.text
+            
+            if response.status_code == 200:
+                res_content = response.text     
                 response.close()
                 self._cache[url] = loads(res_content).get(res_field)
                 break
+
+            if 400 <= response.status_code < 500:
+                raise ManagedException("Server replied with client error code, HTTP " + str(response.status_code) +
+                                " code while opening the url: " + str(url) + " . Not retrying.")
+            if response.status_code >= 500:
+                time.sleep(random.randrange(10, 20))
+                response.close()
+        
             if i == max_retry - 1:
                 # Raise a custom exception if we can't get the web page within max_retry attempts
-                raise ManagedException("Server replied with HTTP " + str(response.status_code) +
+                raise ManagedException("Server replied with server error code, HTTP " + str(response.status_code) +
                                        " code while opening the url: " + str(url))
 
     @staticmethod
@@ -464,6 +471,16 @@ class YahooFinanceETL(object):
             return self._recursive_api_request(hist_obj, up_ticker, clean, i)
         elif clean:
             return self._clean_historical_data(re_data, True)
+        
+    # Private method, acting as wrapper to call _create_dict_ent() and log exceptions as warnings
+    def _safe_create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
+        try:
+            return self._create_dict_ent(up_ticker, statement_type, tech_type, report_name, hist_obj)
+        except ManagedException as e:
+            logging.warning("yahoofinancials ticker: %s error getting %s - %s\n\tContinuing extraction...", 
+                            str(up_ticker), str(statement_type), str(e))
+            
+            return {up_ticker: None}
 
     # Private Method to take scrapped data and build a data dictionary with, used by get_stock_data()
     def _create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
@@ -539,30 +556,33 @@ class YahooFinanceETL(object):
     # Public Method to get stock data
     def get_stock_data(self, statement_type='income', tech_type='', report_name='', hist_obj={}):
         data = {}
-        if isinstance(self.ticker, str):
-            dict_ent = self._create_dict_ent(self.ticker, statement_type, tech_type, report_name, hist_obj)
-            data.update(dict_ent)
+        tickers = [self.ticker] if isinstance(self.ticker, str) else self.ticker
+        
+        if self.concurrent:
+                data = self._get_stock_data_concurrently(tickers, statement_type, tech_type, report_name, hist_obj)
         else:
-            if self.concurrent:
-                with Pool(self._get_worker_count()) as pool:
-                    dict_ents = pool.map(partial(self._create_dict_ent,
-                                                 statement_type=statement_type,
-                                                 tech_type=tech_type,
-                                                 report_name=report_name,
-                                                 hist_obj=hist_obj), self.ticker)
-                    for dict_ent in dict_ents:
-                        data.update(dict_ent)
-                    pool.close()
-                    pool.join()
-            else:
-                for tick in self.ticker:
-                    try:
-                        dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
-                        data.update(dict_ent)
-                    except ManagedException:
-                        logging.warning("yahoofinancials ticker: %s error getting %s - %s\n\tContinuing extraction...",
-                                        str(tick), statement_type, str(ManagedException))
-                        continue
+            for tick in tickers:
+                dict_ent = self._safe_create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
+                if dict_ent[tick]:
+                    data.update(dict_ent)
+                                        
+        return data
+    
+    def _get_stock_data_concurrently(self, tickers, statement_type='income', tech_type='', report_name='', hist_obj={}):
+        data = {}
+    
+        with Pool(self._get_worker_count()) as pool:
+            dict_ents = pool.map(partial(self._safe_create_dict_ent,
+                                         statement_type=statement_type,
+                                         tech_type=tech_type,
+                                         report_name=report_name,
+                                         hist_obj=hist_obj), tickers)
+            for dict_ent in dict_ents:
+                if dict_ent:
+                    data.update(dict_ent)
+            
+            pool.close()
+            pool.join()
         return data
 
     # Public Method to get technical stock data
