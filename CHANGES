@@ -49,4 +49,3 @@
 1.14  02/21/2023 -- Fixed get_ten_day_avg_daily_volume as reported in #137.
 1.14  02/21/2023 -- Removed get_three_month_avg_daily_volume due to value now missing in Yahoo data.
 1.14  02/21/2023 -- Added unit test for get_ten_day_avg_daily_volume
-1.15  04/30/2023 -- Don't retry requests if response code is a client error (4xx). 
