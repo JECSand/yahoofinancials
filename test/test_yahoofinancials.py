@@ -5,8 +5,8 @@
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>
 # MIT License
 
-from yahoofinancials import YahooFinancials as yf
 from unittest import main as t_main, TestCase
+from yahoofinancials import YahooFinancials as yf
 
 # Test Configuration Variables
 stocks = ['AAPL', 'MSFT', 'C', 'IL&FSTRANS.NS']
