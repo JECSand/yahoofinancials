@@ -1,13 +1,13 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.14
+Version: 1.15
 ==============================
 
 Author: Connor Sanders
 Email: sandersconnor1@gmail.com
-Version Released: 02/21/2023
-Tested on Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11
+Version Released: 06/21/2023
+Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
 
 Copyright (c) 2023 Connor Sanders
 MIT License
@@ -44,7 +44,7 @@ historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '20
 from yahoofinancials.calcs import num_shares_outstanding, eps
 from yahoofinancials.etl import YahooFinanceETL
 
-__version__ = "1.14"
+__version__ = "1.15"
 __author__ = "Connor Sanders"
 
 
@@ -76,7 +76,7 @@ class YahooFinancials(YahooFinanceETL):
         report_name = self.YAHOO_FINANCIAL_TYPES[statement_type][report_num]
         if reformat:
             raw_data = self.get_stock_data(statement_type, report_name=report_name, hist_obj=hist_obj)
-            data = self.get_reformatted_stmt_data(raw_data, statement_type)
+            data = self.get_reformatted_stmt_data(raw_data)
         else:
             data = self.get_stock_data(statement_type, report_name=report_name, hist_obj=hist_obj)
         return data
