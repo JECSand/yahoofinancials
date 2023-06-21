@@ -10,11 +10,11 @@ with codecs.open('README.rst', encoding='utf-8') as f:
 
 setup(
     name='yahoofinancials',
-    version='1.14',
+    version='1.15',
     description='A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance',
     long_description=long_description,
     url='https://github.com/JECSand/yahoofinancials',
-    download_url='https://github.com/JECSand/yahoofinancials/archive/1.14.tar.gz',
+    download_url='https://github.com/JECSand/yahoofinancials/archive/1.15.tar.gz',
     author='Connor Sanders',
     author_email='connor@exceleri.com',
     license='MIT',
@@ -32,7 +32,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',

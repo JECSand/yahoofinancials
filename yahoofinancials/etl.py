@@ -182,12 +182,19 @@ class YahooFinanceETL(object):
     def _request_handler(self, url, res_field=""):
         urlopener = UrlOpener()
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
+        cur_url = url
         max_retry = 10
         for i in range(0, max_retry):
-            response = urlopener.open(url, proxy=self._get_proxy(), timeout=self.timeout)
+            response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
             if response.status_code != 200:
-                time.sleep(random.randrange(10, 20))
+                time.sleep(random.randrange(1, 5))
                 response.close()
+                time.sleep(random.randrange(1, 5))
+                if response.status_code == 404 and i % 2 == 0:
+                    if 'query2.' in cur_url:
+                        cur_url = cur_url.replace("query2.", "query1.")
+                    elif 'query1.' in cur_url:
+                        cur_url = cur_url.replace("query1.", "query2.")
             else:
                 res_content = response.text
                 response.close()
@@ -195,8 +202,8 @@ class YahooFinanceETL(object):
                 break
             if i == max_retry - 1:
                 # Raise a custom exception if we can't get the web page within max_retry attempts
-                raise ManagedException("Server replied with HTTP " + str(response.status_code) +
-                                       " code while opening the url: " + str(url))
+                raise ManagedException("Server replied with server error code, HTTP " + str(response.status_code) +
+                                       " code while opening the url: " + str(cur_url))
 
     @staticmethod
     def _format_raw_fundamental_data(raw_data):
@@ -373,7 +380,7 @@ class YahooFinanceETL(object):
     # Private Static Method to build API url for GET Request
     def _build_api_url(self, hist_obj, up_ticker, v="2", events=None):
         if events is None:
-            events = [" div", "split", "earn"]
+            events = ["div", "split", "earn"]
         event_str = ''
         for idx, s in enumerate(events, start=1):
             if idx < len(events):
@@ -390,18 +397,31 @@ class YahooFinanceETL(object):
 
     # Private Method to get financial data via API Call
     def _get_api_data(self, api_url, tries=0):
+        if tries == 0 and self._cache.get(api_url):
+            return self._cache[api_url]
+        cur_url = api_url
+        if tries > 0 and tries % 2 == 0:
+            if 'query2.' in cur_url:
+                cur_url = cur_url.replace("query2.", "query1.")
+            elif 'query1.' in cur_url:
+                cur_url = cur_url.replace("query1.", "query2.")
         urlopener = UrlOpener()
-        response = urlopener.open(api_url, proxy=self._get_proxy(), timeout=self.timeout)
+        response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
         if response.status_code == 200:
             res_content = response.text
             response.close()
-            return loads(res_content)
+            data = loads(res_content)
+            self._cache[api_url] = data
+            return data
         else:
             if tries < 5:
-                time.sleep(random.randrange(10, 20))
+                time.sleep(random.randrange(1, 5))
+                response.close()
+                time.sleep(random.randrange(1, 5))
                 tries += 1
                 return self._get_api_data(api_url, tries)
             else:
+                response.close()
                 return None
 
     # Private Method to clean API data
@@ -448,8 +468,6 @@ class YahooFinanceETL(object):
     # Private Method to Handle Recursive API Request
     def _recursive_api_request(self, hist_obj, up_ticker, clean=True, i=0):
         v = "2"
-        if i == 3:  # After 3 tries querying against 'query2.finance.yahoo.com' try 'query1.finance.yahoo.com' instead
-            v = "1"
         if clean:
             re_data = self._clean_api_data(self._build_api_url(hist_obj, up_ticker, v))
             cleaned_re_data = self._clean_historical_data(re_data)
@@ -573,7 +591,7 @@ class YahooFinanceETL(object):
             return self.get_stock_data(tech_type=tech_type)
 
     # Public Method to get reformatted statement data
-    def get_reformatted_stmt_data(self, raw_data, statement_type):
+    def get_reformatted_stmt_data(self, raw_data):
         sub_dict, data_dict = {}, {}
         data_type = raw_data['dataType']
         if isinstance(self.ticker, str):
