@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.15
-# Version Released: 06/21/2023
+# YahooFinancials Unit Tests v1.16
+# Version Released: 07/17/2023
 # Author: Connor Sanders
 # Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>
@@ -19,20 +19,17 @@ def check_fundamental(test_data, test_type):
     if test_type == 'bal':
         if 'balanceSheetHistoryQuarterly' in test_data and test_data['balanceSheetHistoryQuarterly']['C'] is not None:
             return True
-        else:
-            return False
+        return False
     elif test_type == 'inc':
         if 'incomeStatementHistoryQuarterly' in test_data and \
                 test_data['incomeStatementHistoryQuarterly']['C'] is not None:
             return True
-        else:
-            return False
+        return False
     elif test_type == 'all':
         if 'balanceSheetHistoryQuarterly' in test_data and 'incomeStatementHistoryQuarterly' in test_data and \
                 'cashflowStatementHistoryQuarterly' in test_data:
             return True
-        else:
-            return False
+        return False
 
 
 # Main Test Module Class
