@@ -48,8 +48,10 @@
 1.13  02/14/2023 -- Added additional unit tests.
 1.14  02/21/2023 -- Fixed get_ten_day_avg_daily_volume as reported in #137.
 1.14  02/21/2023 -- Removed get_three_month_avg_daily_volume due to value now missing in Yahoo data.
-1.14  02/21/2023 -- Added unit test for get_ten_day_avg_daily_volume
-1.15  06/21/2023 -- Dropped Python 3.6 support
-1.15  06/21/2023 -- Enhanced cache to cover all api requests
-1.15  06/21/2023 -- Enhanced api url to better toggle between query1 and query2 subdomains
-1.15  06/21/2023 -- Minimized sleeps in between 400 errors to less than 10 seconds
+1.14  02/21/2023 -- Added unit test for get_ten_day_avg_daily_volume.
+1.15  06/21/2023 -- Dropped Python 3.6 support.
+1.15  06/21/2023 -- Enhanced cache to cover all api requests.
+1.15  06/21/2023 -- Enhanced api url to better toggle between query1 and query2 subdomains.
+1.15  06/21/2023 -- Minimized sleeps in between 400 errors to less than 10 seconds.
+1.16  07/17/2023 -- Minor code cleanup in test_yahoofinancials.py.
+1.16  07/17/2023 -- Fixed HTTP 401 error when executing get_current_price() as reported in #152.
