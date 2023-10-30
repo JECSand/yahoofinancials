@@ -10,6 +10,7 @@ import pytz
 import requests as requests
 
 from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP, USER_AGENTS
+from yahoofinancials.sessions import _init_session
 from yahoofinancials.utils import remove_prefix, get_request_config, get_request_category
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
@@ -66,6 +67,7 @@ class YahooFinanceETL(object):
         self.timeout = kwargs.get("timeout", 30)
         self.proxies = kwargs.get("proxies")
         self._cache = {}
+        self.session, self.crumb = _init_session(kwargs.pop("session", None), **kwargs)
 
     # Minimum interval between Yahoo Finance requests for this instance
     _MIN_INTERVAL = 7
@@ -180,10 +182,12 @@ class YahooFinanceETL(object):
 
     # Private method to execute a web scrape request and decrypt the return
     def _request_handler(self, url, res_field=""):
-        urlopener = UrlOpener()
+        urlopener = UrlOpener(self.session)
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
         cur_url = url
         max_retry = 10
+        if 'quoteSummary' in cur_url:
+            cur_url += "&crumb=" + self.crumb
         for i in range(0, max_retry):
             response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
             if response.status_code != 200:

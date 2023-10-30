@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.16
-# Version Released: 07/17/2023
+# YahooFinancials Unit Tests v1.17
+# Version Released: 10/30/2023
 # Author: Connor Sanders
 # Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>

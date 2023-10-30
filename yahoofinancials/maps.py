@@ -2349,7 +2349,7 @@ MODULES_MAP = {
 
 REQUEST_MAP = {
     "quoteSummary": {
-        "path": "https://query2.finance.yahoo.com/v6/finance/quoteSummary/{symbol}",
+        "path": "https://query2.finance.yahoo.com/v10/finance/quoteSummary/{symbol}",
         "response_field": "quoteSummary",
         "request": {
             "formatted": {"required": False, "default": False},
