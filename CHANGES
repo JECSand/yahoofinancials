@@ -55,3 +55,4 @@
 1.15  06/21/2023 -- Minimized sleeps in between 400 errors to less than 10 seconds.
 1.16  07/17/2023 -- Minor code cleanup in test_yahoofinancials.py.
 1.16  07/17/2023 -- Fixed HTTP 401 error when executing get_current_price() as reported in #152.
+1.17  10/30/2023 -- Added a fix for 404 error reported in #157.
