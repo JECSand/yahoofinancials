@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.17
-# Version Released: 10/30/2023
+# YahooFinancials Unit Tests v1.18
+# Version Released: 12/09/2023
 # Author: Connor Sanders
 # Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>
@@ -161,6 +161,12 @@ class TestModule(TestCase):
 
         # Treasuries
         if isinstance(self.test_yf_treasuries_single.get_current_price(), float):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock Earnings data check
+        if isinstance(self.test_yf_stock_single.get_stock_earnings_data().get("C").get("earningsChart").get("quarterly")[0].get("actual"), float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
