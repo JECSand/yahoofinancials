@@ -2349,7 +2349,7 @@ MODULES_MAP = {
 
 REQUEST_MAP = {
     "quoteSummary": {
-        "path": "https://query2.finance.yahoo.com/v10/finance/quoteSummary/{symbol}",
+        "path": "https://query1.finance.yahoo.com/v10/finance/quoteSummary/{symbol}",
         "response_field": "quoteSummary",
         "request": {
             "formatted": {"required": False, "default": False},
@@ -2361,7 +2361,7 @@ REQUEST_MAP = {
         },
     },
     "fundamentals": {
-        "path": "https://query2.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}",
+        "path": "https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/{symbol}",
         "response_field": "timeseries",
         "request": {
             "period1": {"required": True, "default": 493590046},

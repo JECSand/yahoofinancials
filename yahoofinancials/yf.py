@@ -1,13 +1,13 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.18
+Version: 1.19
 ==============================
 
 Author: Connor Sanders
 Email: jecsand@pm.me
-Version Released: 12/09/2023
-Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
+Version Released: 12/12/2023
+Tested on Python 3.7, 3.8, 3.9, 3.10, 3.11, and 3.12
 
 Copyright (c) 2023 Connor Sanders
 MIT License
@@ -44,7 +44,7 @@ historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '20
 from yahoofinancials.calcs import num_shares_outstanding, eps
 from yahoofinancials.etl import YahooFinanceETL
 
-__version__ = "1.17"
+__version__ = "1.19"
 __author__ = "Connor Sanders"
 
 
