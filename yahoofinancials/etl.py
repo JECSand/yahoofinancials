@@ -197,7 +197,7 @@ class YahooFinanceETL(object):
                 open_session = False
                 session, crumb = _init_session(None, proxies=self._get_proxy(), timeout=self.timeout)
                 crumb_url = cur_url + "&crumb=" + str(crumb)
-                response = urlopener.get_data(crumb_url, proxy=self._get_proxy(), timeout=self.timeout)
+                response = urlopener.get_data(session, crumb_url, proxy=self._get_proxy(), timeout=self.timeout)
             else:
                 response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
                 if response.status_code == 401:
