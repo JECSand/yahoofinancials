@@ -55,7 +55,7 @@ class UrlOpener:
             params=params,
             proxies=proxy,
             timeout=timeout,
-            user_agent_headers=request_headers or self.request_headers
+            headers=request_headers or self.request_headers
         )
         return response
 
