@@ -195,9 +195,9 @@ class YahooFinanceETL(object):
         for i in range(0, max_retry):
             if open_session:
                 open_session = False
-                session, crumb = _init_session(None, proxies=self._get_proxy(), timeout=self.timeout)
-                crumb_url = cur_url + "&crumb=" + str(crumb)
                 try:
+                    session, crumb = _init_session(None, proxies=self._get_proxy(), timeout=self.timeout)
+                    crumb_url = cur_url + "&crumb=" + str(crumb)
                     response = urlopener.get_data(session, crumb_url, proxy=self._get_proxy(), timeout=self.timeout)
                 except:
                     continue
