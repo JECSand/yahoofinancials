@@ -7,17 +7,13 @@ from functools import partial
 from json import loads
 from multiprocessing import Pool
 import pytz
-import requests as requests
 
 from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP, USER_AGENTS
-from yahoofinancials.sessions import _init_session
+from yahoofinancials.sessions import SessionManager
 from yahoofinancials.utils import remove_prefix, get_request_config, get_request_category
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
 _lastget = 0
-
-
-# logger = log_to_stderr(logging.DEBUG)
 
 
 # Custom Exception class to handle custom error
@@ -27,7 +23,6 @@ class ManagedException(Exception):
 
 # Class used to get data from urls
 class UrlOpener:
-
     request_headers = {
         "accept": "*/*",
         "accept-encoding": "gzip, deflate, br",
@@ -41,16 +36,16 @@ class UrlOpener:
     user_agent = random.choice(USER_AGENTS)
     request_headers["User-Agent"] = user_agent
 
-    def __init__(self, session=None):
-        self._session = session or requests
+    def __init__(self, session):
+        self._session_manager = SessionManager(session=session)
 
     def open(self, url, request_headers=None, params=None, proxy=None, timeout=30):
-        response = self._session.get(
+        response = self._session_manager.cache_get(
             url=url,
             params=params,
-            proxies=proxy,
+            proxy=proxy,
             timeout=timeout,
-            headers=request_headers or self.request_headers
+            user_agent_headers=request_headers or self.request_headers
         )
         return response
 
@@ -66,8 +61,8 @@ class YahooFinanceETL(object):
         self.max_workers = kwargs.get("max_workers", 8)
         self.timeout = kwargs.get("timeout", 30)
         self.proxies = kwargs.get("proxies")
+        self.session = kwargs.pop("session", None)
         self._cache = {}
-        self.session, self.crumb = _init_session(kwargs.pop("session", None), **kwargs)
 
     # Minimum interval between Yahoo Finance requests for this instance
     _MIN_INTERVAL = 7
@@ -186,8 +181,6 @@ class YahooFinanceETL(object):
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
         cur_url = url
         max_retry = 10
-        if 'quoteSummary' in cur_url:
-            cur_url += "&crumb=" + self.crumb
         for i in range(0, max_retry):
             response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
             if response.status_code != 200:
@@ -409,7 +402,7 @@ class YahooFinanceETL(object):
                 cur_url = cur_url.replace("query2.", "query1.")
             elif 'query1.' in cur_url:
                 cur_url = cur_url.replace("query1.", "query2.")
-        urlopener = UrlOpener()
+        urlopener = UrlOpener(self.session)
         response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
         if response.status_code == 200:
             res_content = response.text
@@ -561,6 +554,10 @@ class YahooFinanceETL(object):
     # Public Method to get stock data
     def get_stock_data(self, statement_type='income', tech_type='', report_name='', hist_obj={}):
         data = {}
+        if statement_type == 'income' and tech_type == '' and report_name == '':
+            statement_type = 'profile'
+            tech_type = 'assetProfile'
+            report_name = 'assetProfile'
         if isinstance(self.ticker, str):
             dict_ent = self._create_dict_ent(self.ticker, statement_type, tech_type, report_name, hist_obj)
             data.update(dict_ent)
@@ -582,8 +579,8 @@ class YahooFinanceETL(object):
                         dict_ent = self._create_dict_ent(tick, statement_type, tech_type, report_name, hist_obj)
                         data.update(dict_ent)
                     except ManagedException:
-                        logging.warning("yahoofinancials ticker: %s error getting %s - %s\n\tContinuing extraction...",
-                                        str(tick), statement_type, str(ManagedException))
+                        logging.info("yahoofinancials ticker: %s error getting %s - %s\n\tContinuing extraction...",
+                                     str(tick), statement_type, str(ManagedException))
                         continue
         return data
 

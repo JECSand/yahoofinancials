@@ -1,5 +1,5 @@
-# YahooFinancials Unit Tests v1.18
-# Version Released: 12/09/2023
+# YahooFinancials Unit Tests v1.19
+# Version Released: 12/12/2023
 # Author: Connor Sanders
 # Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>
@@ -107,66 +107,85 @@ class TestModule(TestCase):
     def test_yf_module_methods(self):
 
         # 10 Day Average Daily Volume
-        if isinstance(self.test_yf_stock_single.get_ten_day_avg_daily_volume(), int):
+        out = self.test_yf_stock_single.get_ten_day_avg_daily_volume()
+        if isinstance(out, int):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
         
         # Stock Current Price
-        if isinstance(self.test_yf_stock_single.get_current_price(), float):
+        out = self.test_yf_stock_single.get_current_price()
+        if isinstance(out, float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
+
         # Stock Net Income
-        if isinstance(self.test_yf_stock_single.get_net_income(), float):
+        out = self.test_yf_stock_single.get_net_income()
+        if isinstance(out, float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Financial Data
-        if self.test_yf_stock_single.get_financial_data().get("C").get("financialCurrency") == "USD":
+        out = self.test_yf_stock_single.get_financial_data()
+        if out.get("C").get("financialCurrency") == "USD":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Profile Data
-        if self.test_yf_stock_single.get_stock_profile_data().get("C").get("sector") == "Financial Services":
+        out = self.test_yf_stock_single.get_stock_profile_data()
+        if out.get("C").get("sector") == "Financial Services":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Summary Data
-        if self.test_yf_stock_single.get_summary_data().get("C").get("currency") == "USD":
+        out = self.test_yf_stock_single.get_summary_data()
+        if out.get("C").get("currency") == "USD":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Price Data
-        if self.test_yf_stock_single.get_stock_price_data().get("C").get("exchangeName") == "NYSE":
+        out = self.test_yf_stock_single.get_stock_price_data()
+        if out.get("C").get("exchangeName") == "NYSE":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Key Statistics
-        if isinstance(self.test_yf_stock_single.get_key_statistics_data().get("C").get("forwardPE"), float):
+        out = self.test_yf_stock_single.get_key_statistics_data()
+        if isinstance(out.get("C").get("forwardPE"), float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock ESG SCORES
-        if self.test_yf_stock_single.get_esg_score_data().get("C").get("peerGroup") == "Banks":
+        out = self.test_yf_stock_single.get_esg_score_data()
+        if out.get("C").get("peerGroup") == "Banks":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Treasuries
-        if isinstance(self.test_yf_treasuries_single.get_current_price(), float):
+        out = self.test_yf_stock_single.get_current_price()
+        if isinstance(out, float):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Stock Earnings data check
-        if isinstance(self.test_yf_stock_single.get_stock_earnings_data().get("C").get("earningsChart").get("quarterly")[0].get("actual"), float):
+        out = self.test_yf_stock_single.get_stock_earnings_data()
+        if isinstance(out.get("C").get("earningsChart").get("quarterly")[0].get("actual"), float):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Stock Data
+        out = self.test_yf_stock_single.get_stock_data()
+        if out.get("C").get("sector") == "Financial Services":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)

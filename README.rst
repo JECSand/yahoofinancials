@@ -16,9 +16,9 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://static.pepy.tech/badge/yahoofinancials/week
     :target: https://pepy.tech/project/yahoofinancials
 
-Current Version: v1.18
+Current Version: v1.19
 
-Version Released: 12/09/2023
+Version Released: 12/12/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
@@ -48,7 +48,6 @@ A powerful financial data module used for pulling both fundamental and technical
 Installation
 -------------
 - yahoofinancials runs on Python 3.7, 3.8, 3.9, 3.10, and 3.11.
-- This package depends on pytz & requests to work.
 
 1. Installation using pip:
 
