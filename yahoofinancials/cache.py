@@ -1,6 +1,6 @@
 import logging
 import time
-
+import random
 import peewee as _peewee
 from threading import Lock
 import os as _os
@@ -356,7 +356,7 @@ class _CookieCache:
                 self.initialised = 1  # success
                 return
             except _peewee.OperationalError:
-                time.sleep(10)
+                time.sleep(random.randint(3, 10))
                 continue
 
 
