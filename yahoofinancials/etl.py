@@ -49,7 +49,7 @@ class UrlOpener:
         )
         return response
 
-    def get_data(self, url, session, request_headers=None, params=None, proxy=None, timeout=30):
+    def get_data(self, session, url, request_headers=None, params=None, proxy=None, timeout=30):
         response = session.get(
             url=url,
             params=params,
