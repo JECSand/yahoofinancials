@@ -358,6 +358,7 @@ class _CookieCache:
             except _peewee.OperationalError:
                 time.sleep(random.randint(3, 15))
                 continue
+        self.initialised = 0  # failure
 
 
     def lookup(self, strategy):
