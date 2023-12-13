@@ -9,7 +9,7 @@ from multiprocessing import Pool
 import pytz
 
 from yahoofinancials.maps import COUNTRY_MAP, REQUEST_MAP, USER_AGENTS
-from yahoofinancials.sessions import SessionManager
+from yahoofinancials.sessions import SessionManager, _init_session
 from yahoofinancials.utils import remove_prefix, get_request_config, get_request_category
 
 # track the last get timestamp to add a minimum delay between gets - be nice!
@@ -44,6 +44,16 @@ class UrlOpener:
             url=url,
             params=params,
             proxy=proxy,
+            timeout=timeout,
+            user_agent_headers=request_headers or self.request_headers
+        )
+        return response
+
+    def get_data(self, url, session, request_headers=None, params=None, proxy=None, timeout=30):
+        response = session.get(
+            url=url,
+            params=params,
+            proxies=proxy,
             timeout=timeout,
             user_agent_headers=request_headers or self.request_headers
         )
@@ -179,10 +189,19 @@ class YahooFinanceETL(object):
     def _request_handler(self, url, res_field=""):
         urlopener = UrlOpener(self.session)
         # Try to open the URL up to 10 times sleeping random time if something goes wrong
+        open_session = False
         cur_url = url
         max_retry = 10
         for i in range(0, max_retry):
-            response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
+            if open_session:
+                open_session = False
+                session, crumb = _init_session(None, proxies=self._get_proxy(), timeout=self.timeout)
+                crumb_url = cur_url + "&crumb=" + str(crumb)
+                response = urlopener.get_data(crumb_url, proxy=self._get_proxy(), timeout=self.timeout)
+            else:
+                response = urlopener.open(cur_url, proxy=self._get_proxy(), timeout=self.timeout)
+                if response.status_code == 401:
+                    open_session = True
             if response.status_code != 200:
                 time.sleep(random.randrange(1, 5))
                 response.close()
@@ -192,6 +211,7 @@ class YahooFinanceETL(object):
                         cur_url = cur_url.replace("query2.", "query1.")
                     elif 'query1.' in cur_url:
                         cur_url = cur_url.replace("query1.", "query2.")
+
             else:
                 res_content = response.text
                 response.close()
@@ -554,7 +574,7 @@ class YahooFinanceETL(object):
     # Public Method to get stock data
     def get_stock_data(self, statement_type='income', tech_type='', report_name='', hist_obj={}):
         data = {}
-        if statement_type == 'income' and tech_type == '' and report_name == '':
+        if statement_type == 'income' and tech_type == '' and report_name == '':    # temp, so this method doesn't return nulls
             statement_type = 'profile'
             tech_type = 'assetProfile'
             report_name = 'assetProfile'
