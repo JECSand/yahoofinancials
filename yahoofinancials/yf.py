@@ -7,7 +7,7 @@ Version: 1.19
 Author: Connor Sanders
 Email: jecsand@pm.me
 Version Released: 12/12/2023
-Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
+Tested on Python 3.8, 3.9, 3.10, and 3.11
 
 Copyright (c) 2023 Connor Sanders
 MIT License
