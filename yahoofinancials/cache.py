@@ -1,6 +1,6 @@
 import logging
 import time
-
+import random
 import peewee as _peewee
 from threading import Lock
 import os as _os
@@ -348,7 +348,7 @@ class _CookieCache:
             self.initialised = 0  # failure
             return
         i = 0
-        while i < 100:
+        while i < 150:
             try:
                 db.connect()
                 Cookie_db_proxy.initialize(db)
@@ -356,8 +356,9 @@ class _CookieCache:
                 self.initialised = 1  # success
                 return
             except _peewee.OperationalError:
-                time.sleep(10)
+                time.sleep(random.randint(3, 15))
                 continue
+        self.initialised = 0  # failure
 
 
     def lookup(self, strategy):
