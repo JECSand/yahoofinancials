@@ -1,4 +1,6 @@
 import logging
+import time
+
 import peewee as _peewee
 from threading import Lock
 import os as _os
@@ -345,10 +347,18 @@ class _CookieCache:
         if db is None:
             self.initialised = 0  # failure
             return
-        db.connect()
-        Cookie_db_proxy.initialize(db)
-        db.create_tables([_CookieSchema])
-        self.initialised = 1  # success
+        i = 0
+        while i < 100:
+            try:
+                db.connect()
+                Cookie_db_proxy.initialize(db)
+                db.create_tables([_CookieSchema])
+                self.initialised = 1  # success
+                return
+            except _peewee.OperationalError:
+                time.sleep(10)
+                continue
+
 
     def lookup(self, strategy):
         if self.dummy:
