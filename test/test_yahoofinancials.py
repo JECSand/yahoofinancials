@@ -43,6 +43,7 @@ class TestModule(TestCase):
         self.test_yf_currencies = yf(currencies)
         self.test_yf_concurrent = yf(stocks, concurrent=True)
         self.test_yf_stock_flat = yf('C', flat_format=True)
+        self.test_yf_stock_analytic = yf('WFC')
 
     # Fundamentals Test
     def test_yf_fundamentals(self):
@@ -120,15 +121,15 @@ class TestModule(TestCase):
     def test_yf_analytic_methods(self):
 
         # Get Insights
-        out = self.test_yf_stock_single.get_insights()
-        if out.get("C").get("instrumentInfo").get("technicalEvents").get("sector") == "Financial Services":
+        out = self.test_yf_stock_analytic.get_insights()
+        if out.get("WFC").get("instrumentInfo").get("technicalEvents").get("sector") == "Financial Services":
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)
 
         # Get Recommendations
-        out = self.test_yf_stock_single.get_recommendations()
-        if isinstance(out.get("C"), list):
+        out = self.test_yf_stock_analytic.get_recommendations()
+        if isinstance(out.get("WFC"), list):
             self.assertEqual(True, True)
         else:
             self.assertEqual(False, True)

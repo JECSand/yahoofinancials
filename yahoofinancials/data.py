@@ -560,6 +560,17 @@ class YahooFinanceData(object):
                 dict_ent = {up_ticker: re_data}
             return dict_ent
 
+    def _retry_create_dict_ent(self, up_ticker, statement_type, tech_type, report_name, hist_obj):
+        i = 0
+        while i < 250:
+            try:
+                out = self._create_dict_ent(up_ticker, statement_type, tech_type, report_name, hist_obj)
+                return out
+            except:
+                time.sleep(random.randint(2, 10))
+                i += 1
+                continue
+
     # Private method to return the stmt_id for the reformat_process
     def _get_stmt_id(self, statement_type, raw_data):
         stmt_id = ''
@@ -611,17 +622,17 @@ class YahooFinanceData(object):
     # Public Method to get stock data
     def get_stock_data(self, statement_type='income', tech_type='', report_name='', hist_obj={}):
         data = {}
-        if statement_type == 'income' and tech_type == '' and report_name == '':    # temp, so this method doesn't return nulls
+        if statement_type == 'income' and tech_type == '' and report_name == '':  # temp, so this method doesn't return nulls
             statement_type = 'profile'
             tech_type = 'assetProfile'
             report_name = 'assetProfile'
         if isinstance(self.ticker, str):
-            dict_ent = self._create_dict_ent(self.ticker, statement_type, tech_type, report_name, hist_obj)
+            dict_ent = self._retry_create_dict_ent(self.ticker, statement_type, tech_type, report_name, hist_obj)
             data.update(dict_ent)
         else:
             if self.concurrent:
                 with Pool(self._get_worker_count()) as pool:
-                    dict_ents = pool.map(partial(self._create_dict_ent,
+                    dict_ents = pool.map(partial(self._retry_create_dict_ent,
                                                  statement_type=statement_type,
                                                  tech_type=tech_type,
                                                  report_name=report_name,
