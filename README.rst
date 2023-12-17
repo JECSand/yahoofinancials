@@ -43,6 +43,7 @@ A powerful financial data module used for pulling both fundamental and technical
     print(YahooFinancials('C').get_recommendations())
 
 - Example Output:
+
 .. code-block:: javascript
 
     {
