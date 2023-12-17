@@ -16,15 +16,69 @@ A python module that returns stock, cryptocurrency, forex, mutual fund, commodit
 .. image:: https://static.pepy.tech/badge/yahoofinancials/week
     :target: https://pepy.tech/project/yahoofinancials
 
-Current Version: v1.19
+Current Version: v1.20
 
-Version Released: 12/12/2023
+Version Released: 12/17/2023
 
 Report any bugs by opening an issue here: https://github.com/JECSand/yahoofinancials/issues
 
 Overview
 --------
 A powerful financial data module used for pulling both fundamental and technical data from Yahoo Finance.
+
+- New analytic methods in v1.20:
+    - get_insights()
+        - returns data for:
+            - 'instrumentInfo'
+            - 'companySnapshot'
+            - 'recommendation'
+            - 'sigDevs'
+            - 'secReports'
+    - get_recommendations()
+
+- Example:
+
+.. code-block:: python
+
+    print(YahooFinancials('C').get_recommendations())
+
+- Example Output:
+.. code-block:: javascript
+
+    {
+        "C": [
+            {
+                "recommendedSymbols": [
+                    {
+                        "score": 0.239602,
+                        "symbol": "BAC"
+                    },
+                    {
+                    "score": 0.225134,
+                    "symbol": "JPM"
+                    },
+                    {
+                    "score": 0.167669,
+                    "symbol": "WFC"
+                    },
+                    {
+                    "score": 0.145864,
+                    "symbol": "GS"
+                    },
+                    {
+                    "score": 0.134071,
+                    "symbol": "F"
+                    }
+                ],
+                "symbol": "C"
+            }
+        ]
+    }
+
+- As of Version 1.20, YahooFinancials supports a new optional parameter called flat_format.
+    - When `YahooFinancials(flat_format=True)`, financial statement data will return in a dict instead of a list. The keys of the dict will be the reporting dates.
+    - Default is False, to ensure backwards compatibility.
+
 
 - As of Version 1.9, YahooFinancials supports optional parameters for asynchronous execution, proxies, and international requests.
 
@@ -40,10 +94,6 @@ A powerful financial data module used for pulling both fundamental and technical
     yahoo_financials = YahooFinancials(tickers, concurrent=True, proxies=proxy_addresses)
     balance_sheet_data_qt = yahoo_financials.get_financial_stmts('quarterly', 'balance')
     print(balance_sheet_data_qt)
-
-- New methods in Version 1.13:
-    - get_esg_score_data()
-
 
 Installation
 -------------
@@ -91,7 +141,7 @@ Module Methods
 --------------
 - The financial data from all methods is returned as JSON.
 - You can run multiple symbols at once using an inputted array or run an individual symbol using an inputted string.
-- YahooFinancials works with Python 3.6, 3.7, 3.8, 3.9, 3.10, and 3.11 and runs on all operating systems. (Windows, Mac, Linux).
+- YahooFinancials works with Python 3.7, 3.8, 3.9, 3.10, 3.11 and 3.12 and runs on all operating systems. (Windows, Mac, Linux).
 
 Featured Methods
 ^^^^^^^^^^^^^^^^
@@ -134,6 +184,7 @@ Additional Module Methods
 - get_cost_of_revenue()
 - get_income_before_tax()
 - get_income_tax_expense()
+- get_esg_score_data()
 - get_gross_profit()
 - get_net_income_from_continuing_ops()
 - get_research_and_development()

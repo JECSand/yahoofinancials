@@ -1,12 +1,12 @@
 """
 ==============================
 The Yahoo Financials Module
-Version: 1.19
+Version: 1.20
 ==============================
 
 Author: Connor Sanders
 Email: jecsand@pm.me
-Version Released: 12/12/2023
+Version Released: 12/17/2023
 Tested on Python 3.7, 3.8, 3.9, 3.10, 3.11, and 3.12
 
 Copyright (c) 2023 Connor Sanders
@@ -42,14 +42,14 @@ historical_prices = yahoo_financials.get_historical_price_data('2015-01-15', '20
 """
 
 from yahoofinancials.calcs import num_shares_outstanding, eps
-from yahoofinancials.etl import YahooFinanceETL
+from yahoofinancials.data import YahooFinanceData
 
-__version__ = "1.19"
+__version__ = "1.20"
 __author__ = "Connor Sanders"
 
 
 # Class containing methods to create stock data extracts
-class YahooFinancials(YahooFinanceETL):
+class YahooFinancials(YahooFinanceData):
     """
     Arguments
     ----------
@@ -68,6 +68,8 @@ class YahooFinancials(YahooFinanceETL):
         Defines how long a request will stay open.
     proxies: str or list, default None, optional
         Defines any proxies to use during this instantiation.
+    flat_format: bool, default False, optional
+        If set to True, returns fundamental data in a flattened format, i.e. without the list of dicts.
     """
 
     # Private method that handles financial statement extraction
@@ -148,6 +150,9 @@ class YahooFinancials(YahooFinanceETL):
     # Public Method for the user to get stock quote data
     def get_esg_score_data(self):
         return self.get_stock_tech_data('esgScores')
+
+    def _get_analytic_data(self, tech_type):
+        return self.get_stock_data(statement_type='analytic', tech_type=tech_type)
 
     # Public Method for user to get historical price data with
     def get_historical_price_data(self, start_date, end_date, time_interval):
@@ -343,6 +348,12 @@ class YahooFinancials(YahooFinanceETL):
 
     def get_research_and_development(self):
         return self._financial_statement_data('income', 'incomeStatementHistory', 'researchDevelopment', 'annual')
+
+    def get_recommendations(self):
+        return self._get_analytic_data("recommendations")
+
+    def get_insights(self):
+        return self._get_analytic_data("insights")
 
     # Calculated Financial Methods
     def get_earnings_per_share(self):

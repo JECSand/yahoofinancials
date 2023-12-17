@@ -60,7 +60,7 @@ class UrlOpener:
         return response
 
 
-class YahooFinanceETL(object):
+class YahooFinanceData(object):
 
     def __init__(self, ticker, **kwargs):
         self.ticker = ticker.upper() if isinstance(ticker, str) else [t.upper() for t in ticker]
@@ -72,6 +72,7 @@ class YahooFinanceETL(object):
         self.timeout = kwargs.get("timeout", 30)
         self.proxies = kwargs.get("proxies")
         self.session = kwargs.pop("session", None)
+        self.flat_format = kwargs.get("flat_format", False)
         self._cache = {}
 
     # Minimum interval between Yahoo Finance requests for this instance
@@ -167,9 +168,15 @@ class YahooFinanceETL(object):
                 params.update({k: v['options'][request_type].get(freq)})
             elif k == "modules" and request_type in v['options']:
                 params.update({k: request_type})
+            elif k == "symbol":
+                params.update({k: symbol.lower()})
             elif k not in params:
+                if k == 'reportsCount' and v is None:
+                    continue
                 params.update({k: v['default']})
         for k, v in _default_query_params.items():  # general defaults
+            if k == 'reportsCount' and v is None:
+                continue
             if k not in params:
                 params.update({k: v})
         if params.get("type"):
@@ -183,6 +190,8 @@ class YahooFinanceETL(object):
             for k, v in params.items():
                 if k != "modules":
                     url += "&" + k + "=" + str(v)
+        elif params.get("symbol"):
+            url += "?symbol=" + params.get("symbol")
         return url
 
     # Private method to execute a web scrape request and decrypt the return
@@ -269,6 +278,11 @@ class YahooFinanceETL(object):
         data = self._cache[url]
         if tech_type == '' and statement_type in ["income", "balance", "cash"]:
             data = self._format_raw_fundamental_data(data)
+        elif statement_type == 'analytic':
+            data = data.get("result")
+            if tech_type == "recommendations":
+                if isinstance(data, list) and len(data) > 0:
+                    data[0].get("recommendedSymbols")
         else:
             data = self._format_raw_module_data(data, tech_type)
         return data
@@ -519,7 +533,9 @@ class YahooFinanceETL(object):
             dict_ent = {}
             params = {}
             r_map = get_request_config(tech_type, REQUEST_MAP)
-            r_cat = get_request_category(tech_type, self.YAHOO_FINANCIAL_TYPES, statement_type)
+            r_cat = None
+            if statement_type != 'analytic':
+                r_cat = get_request_category(tech_type, self.YAHOO_FINANCIAL_TYPES, statement_type)
             YAHOO_URL = self._construct_url(
                 up_ticker.lower(),
                 r_map,
@@ -568,8 +584,22 @@ class YahooFinanceETL(object):
         else:
             return raw_data
 
+    # Private Method for the Flat Reformat Process
+    @staticmethod
+    def _reformat_stmt_data_process_flat(raw_data):
+        final_data = {}
+        if raw_data is not None:
+            for date_key, data_item in raw_data.items():
+                final_data.update({date_key: data_item})
+            return final_data
+        else:
+            return raw_data
+
     # Private Method to return subdict entry for the statement reformat process
     def _get_sub_dict_ent(self, ticker, raw_data):
+        if self.flat_format:
+            form_data_dict = self._reformat_stmt_data_process_flat(raw_data[ticker])
+            return {ticker: form_data_dict}
         form_data_list = self._reformat_stmt_data_process(raw_data[ticker])
         return {ticker: form_data_list}
 

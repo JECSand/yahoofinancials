@@ -1,7 +1,7 @@
-# YahooFinancials Unit Tests v1.19
-# Version Released: 12/12/2023
+# YahooFinancials Unit Tests v1.20
+# Version Released: 12/17/2023
 # Author: Connor Sanders
-# Tested on Python 3.7, 3.8, 3.9, 3.10, and 3.11
+# Tested on Python 3.7, 3.8, 3.9, 3.10, 3.11, and 3.12
 # Copyright (c) 2023 Connor Sanders <jecsand@pm.me>
 # MIT License
 
@@ -42,6 +42,7 @@ class TestModule(TestCase):
         self.test_yf_treasuries_multi = yf(us_treasuries)
         self.test_yf_currencies = yf(currencies)
         self.test_yf_concurrent = yf(stocks, concurrent=True)
+        self.test_yf_stock_flat = yf('C', flat_format=True)
 
     # Fundamentals Test
     def test_yf_fundamentals(self):
@@ -102,6 +103,35 @@ class TestModule(TestCase):
         self.assertEqual(result, True)
         result = check_fundamental(multi_all_statement_data_qt, 'all')
         self.assertEqual(result, True)
+
+    # Fundamentals in Flat Format Test
+    def test_yf_fundamentals_flat(self):
+        # Single stock test
+        single_all_statement_data_qt = self.test_yf_stock_flat.get_financial_stmts('quarterly',
+                                                                                     ['income', 'cash', 'balance'])
+        if ((isinstance(single_all_statement_data_qt.get("incomeStatementHistoryQuarterly").get("C"), dict) and
+                isinstance(single_all_statement_data_qt.get("balanceSheetHistoryQuarterly").get("C"), dict)) and
+                isinstance(single_all_statement_data_qt.get("cashflowStatementHistoryQuarterly").get("C"), dict)):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+    # Analytic Methods Test
+    def test_yf_analytic_methods(self):
+
+        # Get Insights
+        out = self.test_yf_stock_single.get_insights()
+        if out.get("C").get("instrumentInfo").get("technicalEvents").get("sector") == "Financial Services":
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
+
+        # Get Recommendations
+        out = self.test_yf_stock_single.get_recommendations()
+        if isinstance(out.get("C"), list):
+            self.assertEqual(True, True)
+        else:
+            self.assertEqual(False, True)
 
     # Extra Module Methods Test
     def test_yf_module_methods(self):
