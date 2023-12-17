@@ -59,3 +59,6 @@
 1.18  12/09/2023 -- Merged in branch from shaunpatterson to fix #164.
 1.19  12/12/2023 -- Refactored session management system to handle cookie and crumbs better.
 1.19  12/12/2023 -- Added fixes for #167, #166, #160.
+1.20  12/16/2023 -- Merged in pull request #171 from bjosun.
+1.20  12/17/2023 -- Added optional flat format output param on YahooFinancial class.
+1.20  12/17/2023 -- Added get_insight() and get_recommendations() methods.

@@ -207,11 +207,11 @@ class SessionManager(metaclass=SingletonMeta):
 
         try:
             if self._cookie_strategy == 'csrf':
-                logging.info(f'yahoofinancials: toggling cookie strategy {self._cookie_strategy} -> basic')
+                logging.debug(f'yahoofinancials: toggling cookie strategy {self._cookie_strategy} -> basic')
                 self._session.cookies.clear()
                 self._cookie_strategy = 'basic'
             else:
-                logging.info(f'yahoofinancials: toggling cookie strategy {self._cookie_strategy} -> csrf')
+                logging.debug(f'yahoofinancials: toggling cookie strategy {self._cookie_strategy} -> csrf')
                 self._cookie_strategy = 'csrf'
             self._cookie = None
             self._crumb = None
@@ -237,7 +237,7 @@ class SessionManager(metaclass=SingletonMeta):
         if cookie_dict['age'] > datetime.timedelta(days=1):
             return False
         self._session.cookies.update(cookie_dict['cookie'])
-        logging.info('yahoofinancials: loaded persistent cookie')
+        logging.debug('yahoofinancials: loaded persistent cookie')
 
     def _save_cookie_basic(self, cookie):
         try:
@@ -253,18 +253,16 @@ class SessionManager(metaclass=SingletonMeta):
         # Periodically refresh, 24 hours seems fair.
         if cookie_dict['age'] > datetime.timedelta(days=1):
             return None
-        logging.info('yahoofinancials: loaded persistent cookie')
+        logging.debug('yahoofinancials: loaded persistent cookie')
         return cookie_dict['cookie']
 
     def _get_cookie_basic(self, proxy=None, timeout=30):
         if self._cookie is not None:
-            logging.info('yahoofinancials: reusing cookie')
+            logging.debug('yahoofinancials: reusing cookie')
             return self._cookie
-
         self._cookie = self._load_cookie_basic()
         if self._cookie is not None:
             return self._cookie
-
         # To avoid infinite recursion, do NOT use self.get()
         # - 'allow_redirects' copied from @psychoz971 solution - does it help USA?
         response = self._session.get(
@@ -273,21 +271,20 @@ class SessionManager(metaclass=SingletonMeta):
             proxies=proxy,
             timeout=timeout,
             allow_redirects=True)
-
         if not response.cookies:
-            logging.info("yahoofinancials: response.cookies = None")
+            logging.debug("yahoofinancials: response.cookies = None")
             return None
         self._cookie = list(response.cookies)[0]
         if self._cookie == '':
-            logging.info("yahoofinancials: list(response.cookies)[0] = ''")
+            logging.debug("yahoofinancials: list(response.cookies)[0] = ''")
             return None
         self._save_cookie_basic(self._cookie)
-        logging.info(f"yahoofinancials: fetched basic cookie = {self._cookie}")
+        logging.debug(f"yahoofinancials: fetched basic cookie = {self._cookie}")
         return self._cookie
 
     def _get_crumb_basic(self, proxy=None, timeout=30):
         if self._crumb is not None:
-            logging.info('yahoofinancials: reusing crumb')
+            logging.debug('yahoofinancials: reusing crumb')
             return self._crumb
 
         cookie = self._get_cookie_basic()
@@ -310,10 +307,9 @@ class SessionManager(metaclass=SingletonMeta):
             crumb_response = self._session.get(**get_args)
         self._crumb = crumb_response.text
         if self._crumb is None or '<html>' in self._crumb:
-            logging.info("yahoofinancials: didn't receive crumb")
+            logging.debug("yahoofinancials: didn't receive crumb")
             return None
-
-        logging.info(f"yahoofinancials: crumb = '{self._crumb}'")
+        logging.debug(f"yahoofinancials: crumb = '{self._crumb}'")
         return self._crumb
 
     def _get_cookie_and_crumb_basic(self, proxy, timeout):
@@ -323,37 +319,33 @@ class SessionManager(metaclass=SingletonMeta):
 
     def _get_cookie_csrf(self, proxy, timeout):
         if self._cookie is not None:
-            logging.info('yahoofinancials: reusing cookie')
+            logging.debug('yahoofinancials: reusing cookie')
             return True
 
         elif self._load_session_cookies():
-            logging.info('yahoofinancials: reusing persistent cookie')
+            logging.debug('yahoofinancials: reusing persistent cookie')
             self._cookie = True
             return True
-
         base_args = {
             'headers': self.user_agent_headers,
             'proxies': proxy,
             'timeout': timeout}
-
         get_args = {**base_args, 'url': 'https://guce.yahoo.com/consent'}
         if self._session_is_caching:
             get_args['expire_after'] = self._expire_after
             response = self._session.get(**get_args)
         else:
             response = self._session.get(**get_args)
-
         soup = BeautifulSoup(response.content, 'html.parser')
         csrfTokenInput = soup.find('input', attrs={'name': 'csrfToken'})
         if csrfTokenInput is None:
-            logging.info('yahoofinancials: Failed to find "csrfToken" in response')
+            logging.debug('yahoofinancials: Failed to find "csrfToken" in response')
             return False
         csrfToken = csrfTokenInput['value']
-        logging.info(f'csrfToken = {csrfToken}')
+        logging.debug(f'csrfToken = {csrfToken}')
         sessionIdInput = soup.find('input', attrs={'name': 'sessionId'})
         sessionId = sessionIdInput['value']
-        logging.info(f"sessionId='{sessionId}")
-
+        logging.debug(f"sessionId='{sessionId}")
         originalDoneUrl = 'https://finance.yahoo.com/'
         namespace = 'yahoo'
         data = {
@@ -384,7 +376,7 @@ class SessionManager(metaclass=SingletonMeta):
 
     def _get_crumb_csrf(self, proxy=None, timeout=30):
         if self._crumb is not None:
-            logging.info('yahoofinancials: reusing crumb')
+            logging.debug('yahoofinancials: reusing crumb')
             return self._crumb
         if not self._get_cookie_csrf(proxy, timeout):
             # This cookie stored in session
@@ -401,14 +393,14 @@ class SessionManager(metaclass=SingletonMeta):
             r = self._session.get(**get_args)
         self._crumb = r.text
         if self._crumb is None or '<html>' in self._crumb or self._crumb == '':
-            logging.info("yahoofinancials: didn't receive crumb")
+            logging.debug("yahoofinancials: didn't receive crumb")
             return None
-        logging.info(f"yahoofinancials: crumb = '{self._crumb}'")
+        logging.debug(f"yahoofinancials: crumb = '{self._crumb}'")
         return self._crumb
 
     def _get_cookie_and_crumb(self, proxy=None, timeout=30):
         cookie, crumb, strategy = None, None, None
-        logging.info(f"yahoofinancials: cookie_mode = '{self._cookie_strategy}'")
+        logging.debug(f"yahoofinancials: cookie_mode = '{self._cookie_strategy}'")
         with self._cookie_lock:
             if self._cookie_strategy == 'csrf':
                 crumb = self._get_crumb_csrf()
@@ -480,7 +472,7 @@ class SessionManager(metaclass=SingletonMeta):
         return proxy
 
     def get_raw_json(self, url, user_agent_headers=None, params=None, proxy=None, timeout=30):
-        logging.info(f'yahoofinancials: get_raw_json(): {url}')
+        logging.debug(f'yahoofinancials: get_raw_json(): {url}')
         response = self.get(url, user_agent_headers=user_agent_headers, params=params, proxy=proxy, timeout=timeout)
         response.raise_for_status()
         return response.json()

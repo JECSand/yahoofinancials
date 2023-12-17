@@ -2375,6 +2375,19 @@ REQUEST_MAP = {
             "padTimeSeries": {"required": False, "default": False},
         },
     },
+    "insights": {
+        "path": "https://query1.finance.yahoo.com/ws/insights/v2/finance/insights",
+        "response_field": "finance",
+        "request": {
+            "symbol": {"required": True, "default": None},
+            "reportsCount": {"required": False, "default": None},
+        },
+    },
+    "recommendations": {
+        "path": "https://query1.finance.yahoo.com/v6/finance/recommendationsbysymbol/{symbol}",
+        "response_field": "finance",
+        "request": {},
+    },
 }
 
 USER_AGENTS = [
