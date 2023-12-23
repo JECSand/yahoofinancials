@@ -55,20 +55,20 @@ A powerful financial data module used for pulling both fundamental and technical
                         "symbol": "BAC"
                     },
                     {
-                    "score": 0.225134,
-                    "symbol": "JPM"
+                        "score": 0.225134,
+                        "symbol": "JPM"
                     },
                     {
-                    "score": 0.167669,
-                    "symbol": "WFC"
+                        "score": 0.167669,
+                        "symbol": "WFC"
                     },
                     {
-                    "score": 0.145864,
-                    "symbol": "GS"
+                        "score": 0.145864,
+                        "symbol": "GS"
                     },
                     {
-                    "score": 0.134071,
-                    "symbol": "F"
+                        "score": 0.134071,
+                        "symbol": "F"
                     }
                 ],
                 "symbol": "C"
