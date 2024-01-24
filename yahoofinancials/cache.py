@@ -360,7 +360,6 @@ class _CookieCache:
                 continue
         self.initialised = 0  # failure
 
-
     def lookup(self, strategy):
         if self.dummy:
             return None

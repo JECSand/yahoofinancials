@@ -5,6 +5,10 @@ def remove_prefix(s, prefix):
 def get_request_config(tech_type, req_map):
     if tech_type == '':
         r_map = req_map['fundamentals']
+    elif tech_type == 'insights':
+        r_map = req_map['insights']
+    elif tech_type == 'recommendations':
+        r_map = req_map['recommendations']
     else:
         r_map = req_map['quoteSummary']
     return r_map
