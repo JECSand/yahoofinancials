@@ -370,11 +370,14 @@ class _CookieCache:
         try:
             data = _CookieSchema.get(_CookieSchema.strategy == strategy)
             cookie = _pkl.loads(data.cookie_bytes)
-
-            
-            # Convert string to datetime.datetime
-            
-            fetch_date = _datetime.datetime.strptime(data.fetch_date, '%Y-%m-%dT%H:%M:%S.%f')
+            if isinstance(data.fetch_date, _datetime.datetime):
+                fetch_date = data.fetch_date
+            else:
+                # Try parsing the date string using the two supported formats
+                try:
+                    fetch_date = _datetime.datetime.strptime(data.fetch_date, "%Y-%m-%d %H:%M:%S.%f")
+                except ValueError:
+                    fetch_date = _datetime.datetime.strptime(data.fetch_date, "%Y-%m-%dT%H:%M:%S.%f")
             return {'cookie': cookie, 'age': _datetime.datetime.now() - fetch_date}
         except _CookieSchema.DoesNotExist:
             return None
