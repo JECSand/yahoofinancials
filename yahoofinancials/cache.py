@@ -370,7 +370,7 @@ class _CookieCache:
         try:
             data = _CookieSchema.get(_CookieSchema.strategy == strategy)
             cookie = _pkl.loads(data.cookie_bytes)
-            return {'cookie': cookie, 'age': _datetime.datetime.now() - data.fetch_date}
+            return {'cookie': cookie, 'age': (_datetime.datetime.now() - _datetime.datetime.fromisoformat(data.fetch_date)).isoformat()}
         except _CookieSchema.DoesNotExist:
             return None
 
