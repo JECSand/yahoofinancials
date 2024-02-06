@@ -360,27 +360,19 @@ class _CookieCache:
                 continue
         self.initialised = 0  # failure
 
-    def lookup(self, strategy):
-        if self.dummy:
-            return None
-        if self.initialised == -1:
-            self.initialise()
-        if self.initialised == 0:  # failure
-            return None
-        try:
-            data = _CookieSchema.get(_CookieSchema.strategy == strategy)
-            cookie = _pkl.loads(data.cookie_bytes)
-            if isinstance(data.fetch_date, _datetime.datetime):
-                fetch_date = data.fetch_date
-            else:
-                # Try parsing the date string using the two supported formats
-                try:
-                    fetch_date = _datetime.datetime.strptime(data.fetch_date, "%Y-%m-%d %H:%M:%S.%f")
-                except ValueError:
-                    fetch_date = _datetime.datetime.strptime(data.fetch_date, "%Y-%m-%dT%H:%M:%S.%f")
-            return {'cookie': cookie, 'age': _datetime.datetime.now() - fetch_date}
-        except _CookieSchema.DoesNotExist:
-            return None
+        def lookup(self, strategy):
+            if self.dummy:
+                return None
+            if self.initialised == -1:
+                self.initialise()
+            if self.initialised == 0:  # failure
+                return None
+            try:
+                data = _CookieSchema.get(_CookieSchema.strategy == strategy)
+                cookie = _pkl.loads(data.cookie_bytes)
+                return {'cookie': cookie, 'age': (_datetime.datetime.now() - _datetime.datetime.fromisoformat(data.fetch_date)).isoformat()}
+            except _CookieSchema.DoesNotExist:
+                return None
 
     def store(self, strategy, cookie):
         if self.dummy:
